@@ -3,7 +3,7 @@
   "version": "16.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
-  "repository": "github:stev2020/suomi-satztrainer",
+  "repository": "github:vanamo-app/vanamo",
   "description": "Vanamo – kostenlose, quelloffene Sprachlern-App. Aktuell Finnisch-Deutsch mit Levels, Wiederholungen, Grammatik und Tatoeba-Audio.",
   "type": "module",
   "scripts": {

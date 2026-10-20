@@ -5,7 +5,7 @@
 //    kein Konto, keine Eingaben, keine vollständige Adresse; höchstens 5 je Seitenaufruf, nur auf vanamo.app)
 import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY} from './supabase-config.js?v=2';
 
-const REPORT_HOSTS=['vanamo.app','www.vanamo.app','stev2020.github.io'];
+const REPORT_HOSTS=['vanamo.app','www.vanamo.app','vanamo-app.github.io'];
 const MAX_REPORTS=5;
 
 /** Browserfamilie mit Hauptversion, z. B. "Chrome 129" – nie der ganze User-Agent. */

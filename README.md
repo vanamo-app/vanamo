@@ -38,7 +38,7 @@ Dieses Repository enthält einen fertigen GitHub-Actions-Workflow. Nach dem Hoch
 1. Öffne im Repository **Settings → Pages**.
 2. Wähle unter **Build and deployment → Source** den Eintrag **GitHub Actions**.
 3. Öffne den Reiter **Actions** und den Lauf **Deploy Suomi-Satztrainer to GitHub Pages**.
-4. Nach erfolgreichem Abschluss steht die Website unter `https://DEIN-NAME.github.io/suomi-satztrainer/` bereit.
+4. Nach erfolgreichem Abschluss steht die Website unter `https://DEIN-NAME.github.io/vanamo/` bereit.
 
 Jeder Push auf den Branch `main` veröffentlicht den Inhalt von `dist/` erneut. Der Lernstand bleibt jeweils im verwendeten Browser gespeichert. Die Audiowiedergabe benötigt eine Internetverbindung zu Tatoeba.
 
@@ -239,7 +239,7 @@ Prüfung: `node test-learning-path.mjs` sowie `node test-home-browser.mjs` (Play
 
 ## Eigene Domain und Sicherheits-Header (1. Oktober 2026)
 
-- **Adresse:** Die App läuft unter **https://vanamo.app** (GitHub Pages mit eigener Domain, DNS bei Cloudflare). `stev2020.github.io/suomi-satztrainer` leitet dorthin weiter.
+- **Adresse:** Die App läuft unter **https://vanamo.app** (GitHub Pages mit eigener Domain, DNS bei Cloudflare). Das Repo liegt in der Organisation `vanamo-app` unter github.com/vanamo-app/vanamo (früher stev2020/suomi-satztrainer).
 - **Cloudflare davor:** Der Proxy ist eingeschaltet, SSL/TLS steht auf „Full (strict)“. Rocket Loader, E-Mail-Verschleierung und automatisch eingefügte Analyse sind aus, weil sie Skripte ins HTML schreiben würden, die die CSP blockiert.
 - **Header** über eine Transform Rule („Modify Response Header“):
   - `Strict-Transport-Security`
