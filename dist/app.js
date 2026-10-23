@@ -1286,7 +1286,7 @@ function mountHomeTreeLater(){
  homeTree=true;
  // Das kleine Modul (Platzhalter, Fortschritt) gleich; den 3D-Baum lädt es selbst erst nach dem Intro.
  const waitIntro=new Promise(res=>{const wait=()=>introActive()?setTimeout(wait,150):res();wait();}).then(()=>new Promise(r=>setTimeout(r,400)));
- import('./home-tree.mjs?v=21')
+ import('./home-tree.mjs?v=22')
   .then(m=>{homeTree=m.mountHomeTree({getReviews:()=>memory.reviews,waitIntro});})
   .catch(err=>{console.warn('Baum',err);homeTree=null;});
 }

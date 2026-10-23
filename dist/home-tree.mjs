@@ -33,7 +33,14 @@
 // Nur tagsüber, nicht bei „Weniger Bewegung“ und nicht, während der Baum wächst oder die Seite gescrollt ist.
 import {REVIEW_KINDS} from './review-plan.mjs?v=2';
 
-export const STAGE_AT=[0,5,20,50,100,180,300,500,800,1200,2000];   // ab so vielen neu gelernten Sätzen gilt die Stufe
+// Wachstum über den Kurs (Nutzer 23.10.): voll ausgewachsen am Ende von Level 3, anfangs schnell, dann immer langsamer.
+// Die Stufen sind Anteile am Kurs der Sprache (Sätze in Level 1–3), damit sie auch für andere Sprachen passen;
+// Stufe 1 kommt immer nach den ersten 5 Sätzen. Finnisch (nach der Doppelungs-Prüfung): 2.924 Sätze in Level 1–3 →
+// 5 · 30 · 111 · 262 · 523 · 857 · 1.260 · 1.713 · 2.269 · 2.924 (Ende Level 1 ≈ Stufe 4, Ende Level 2 ≈ Stufe 7).
+export const COURSE_SIZE={fi:2924};
+export const STAGE_SHARE=[0.0103,0.038,0.0897,0.179,0.293,0.431,0.586,0.776,1];   // Stufen 2–10
+export const stageThresholds=(size=COURSE_SIZE.fi)=>[0,5,...STAGE_SHARE.map(f=>Math.max(6,Math.round(f*size)))];
+export const STAGE_AT=stageThresholds();   // ab so vielen neu gelernten Sätzen gilt die Stufe
 export const YEAR_LEN=112;                                            // 4 × 28 Tage, beginnt mit dem Frühling
 const START_DAY=5;                                                    // ein neuer Baum ist gleich grün
 const GLAS_STILL=.4;                                                  // ab hier deckt die weiche Ebene ganz: Standbild
@@ -356,7 +363,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
    '<div class="baum-test-row" data-row="stage"><span class="baum-test-k">Stufe</span>'+Array.from({length:11},(_,i)=>`<button type="button" data-stage="${i}">${i}</button>`).join('')+'</div>'+
    '<div class="baum-test-row" data-row="season"><span class="baum-test-k">Jahreszeit</span>'+SEASONS.map(s=>`<button type="button" data-season="${s}">${SEASON_NAMES[s]}</button>`).join('')+'</div>'+
    '<div class="baum-test-row"><span class="baum-test-k">Tag</span><input type="range" min="0" max="111" step="1" aria-label="Tag im Vanamo-Jahr"><output></output></div>'+
-   '<div class="baum-test-row baum-test-actions"><button type="button" data-act="grow">Nächste Stufe wachsen ▸</button><button type="button" data-act="jay">Eichelhäher (Stufe 0)</button><button type="button" data-act="visit">Häher-Besuch</button><button type="button" data-act="mine">Mein Baum</button></div>';
+   '<div class="baum-test-row baum-test-actions"><button type="button" data-act="grow">Nächste Stufe wachsen ▸</button><button type="button" data-act="jay">Eichelhäher (Stufe 0)</button><button type="button" data-act="visit">Häher-Besuch</button><button type="button" data-act="squirrel">Eichhörnchen-Ausflug (Winter)</button><button type="button" data-act="mine">Mein Baum</button></div>';
   prog.after(el);
   const range=el.querySelector('input'),out=el.querySelector('output');
   const shownStage=()=>Math.round(baum.stage);
@@ -380,6 +387,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
    else if(b.dataset.season)set({day:SEASON_MID[b.dataset.season]});
    else if(b.dataset.act==='grow'){const n=Math.min(10,shownStage()+1);set({});baum.grow(n);setTimeout(paint,400);setTimeout(paint,9000);}
    else if(b.dataset.act==='jay'){set({stage:0});baum.jay();}
+   else if(b.dataset.act==='squirrel'){set({stage:Math.max(6,shownStage()),day:SEASON_MID.winter});setTimeout(()=>baum.winterTrip?.(),300);}
    else if(b.dataset.act==='visit'){if(shownStage()<1)set({stage:1});else set({});setTimeout(()=>baum.visit(),50);}
    else if(b.dataset.act==='mine'){testOn=false;testShown=null;baum.setDay(day);baum.setStage(state.stage);paintProgress();paint();run();}
   });
@@ -458,7 +466,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  // ---- Baum laden
  async function load(){
   await waitIntro;
-  const {createBaum}=await import('./baum/baum.mjs?v=15');
+  const {createBaum}=await import('./baum/baum.mjs?v=16');
   baum=createBaum(stageEl,{page:true,paused:true,stage:start==='done'?state.stage:0,seed:start==='done',day,
    frameY:.34,zoom:.86,maxDpr:coarse?1.5:2,reduceMotion:reduce.matches});
   await baum.ready;

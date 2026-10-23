@@ -557,7 +557,7 @@ float fbm3(vec3 p){ float s=0., a=.5; for(int i=0;i<3;i++){ s+=a*vnoise3(p); p*=
 const TUBE = /* glsl */`
 attribute vec3 aStart; attribute vec3 aEnd; attribute vec2 aRad; attribute vec2 aS; attribute vec4 aRef; attribute vec4 aPrev;
 uniform float uBend; uniform float uBendH;
-varying vec3 vBark;
+varying vec3 vBark; varying vec3 vRestP;
 vec3 gTU, gTV;
 void tubeFrame(out vec3 P, out vec3 Nrm){
   vec3 dv = aEnd - aStart; float len = length(dv);
@@ -587,7 +587,7 @@ void tubeFrame(out vec3 P, out vec3 Nrm){
   vec3 q = p0 + radial*r;
   float knob = smoothstep(.05, .28, r);              // nur dicke Äste und Stamm
   r *= 1. + knob*(.08*sin(q.x*5.1 + q.y*2.3)*sin(q.z*4.7 - q.y*1.7) + .045*sin(q.y*9.3 + q.x*7.1 + q.z*3.3));
-  P = p0 + radial*r; Nrm = radial;
+  P = p0 + radial*r; Nrm = radial; vRestP = P;
   P += vec3(.907, 0., -.42) * uBend * pow(clamp(p0.y / uBendH, 0., 1.3), 2.);   // Böe
   gTU = cross(ax, radial); gTV = ax;
   float rb = max(r, .012) * 7.;
@@ -603,7 +603,7 @@ function barkTex(url, srgb) {
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
-const tubeUniforms = { uBare: { value: 0 }, uBend: { value: 0 }, uBendH: { value: 1 }, uRelief: { value: 1 }, uSnow: { value: 0 }, uBarkC: { value: barkTex(BARK_C, true) }, uBarkN: { value: barkTex(BARK_N, false) },
+const tubeUniforms = { uHoleA: { value: new V() }, uHoleN: { value: new V(0, 0, 1) }, uHoleR: { value: new V(1, 0, 0) }, uHoleU: { value: new V(0, 1, 0) }, uHoleS: { value: new V(0.105, 0.14, 0) }, uBare: { value: 0 }, uBend: { value: 0 }, uBendH: { value: 1 }, uRelief: { value: 1 }, uSnow: { value: 0 }, uBarkC: { value: barkTex(BARK_C, true) }, uBarkN: { value: barkTex(BARK_N, false) },
   uSkew: { value: -0.55 } };
 function tubeMaterial() {
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92 });
@@ -615,7 +615,7 @@ function tubeMaterial() {
       .replace('#include <beginnormal_vertex>', 'vec3 tP, tN; tubeFrame(tP, tN); vec3 objectNormal = tN; vTU = normalize(normalMatrix * gTU); vTV = normalize(normalMatrix * gTV); vUpN = tN.y;')
       .replace('#include <begin_vertex>', 'vec3 transformed = tP;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vBark; varying vec3 vTU; varying vec3 vTV; varying float vUpN; uniform float uRelief; uniform float uSnow; uniform float uBare; uniform sampler2D uBarkC; uniform sampler2D uBarkN; uniform float uSkew;\n' + NOISE + `
+      .replace('#include <common>', '#include <common>\nvarying vec3 vBark; varying vec3 vRestP; uniform vec3 uHoleA; uniform vec3 uHoleN; uniform vec3 uHoleR; uniform vec3 uHoleU; uniform vec3 uHoleS; varying vec3 vTU; varying vec3 vTV; varying float vUpN; uniform float uRelief; uniform float uSnow; uniform float uBare; uniform sampler2D uBarkC; uniform sampler2D uBarkN; uniform float uSkew;\n' + NOISE + `
 vec3 h33(vec3 p){ p = vec3(dot(p,vec3(127.1,311.7,74.7)), dot(p,vec3(269.5,183.3,246.1)), dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }
 // Voronoi: x = Abstand zur nächsten Zelle, y = zur zweitnächsten, z = Zufallswert der Zelle
 vec3 voro3(vec3 p){ vec3 i = floor(p), f = fract(p); float d1 = 8., d2 = 8., id = 0.;
@@ -661,11 +661,33 @@ float barkHf(vec3 p){ vec3 q = barkQ(p);
         diffuseColor.rgb *= mix(bc, mix(vec3(.24, .38, .07), vec3(.36, .29, .22), uBare), young);
         // Schnee auf allem, was nach oben zeigt
         float snowF = uSnow * smoothstep(.35, .75, vUpN + (n - .5) * .5);
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.92, .94, .97), snowF);`)
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.92, .94, .97), snowF);
+        // Baumloch: dunkle Öffnung (oben tiefer im Schatten, unten etwas heller), darum ein heller, glatterer Wulst
+        float holeE = 9.; vec2 holeD = vec2(0.);
+        if (uHoleS.z > .001) { vec3 hp = vRestP - uHoleA;
+          if (dot(hp, uHoleN) > 0.) { holeD = vec2(dot(hp, uHoleR) / uHoleS.x, dot(hp, uHoleU) / uHoleS.y); holeE = length(holeD); } }
+        float holeIn = (1. - smoothstep(.9, 1.0, holeE)) * uHoleS.z;
+        float holeRim = smoothstep(.92, 1.06, holeE) * (1. - smoothstep(1.5, 2.3, holeE)) * uHoleS.z;
+        // Wulst: heller, wärmer und glatter (überwallte Rinde), oben links im Licht stärker
+        float rimLit = .75 + .25 * clamp(-holeD.x * .6 + holeD.y * .8, -1., 1.);
+        float ridge = .55 + .45 * cos((holeE - 1.12) * 9.);                 // zwei, drei Ringe überwallter Rinde
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, vec3(lum) * vec3(3.4, 3.15, 2.9), .3) * (1. + .16 * rimLit * ridge), holeRim * .6);
+        // Öffnung: ganz dunkel, unten sieht man ein Stück der Innenwand (heller), oben liegt sie im Schatten
+        vec3 holeC = mix(vec3(.05, .034, .024), vec3(.12, .08, .055), smoothstep(.2, -.9, holeD.y));
+        float wall = smoothstep(.7, .97, holeE) * smoothstep(.15, -.55, holeD.y);
+        holeC = mix(holeC, vec3(.25, .17, .11), wall * .8);
+        holeC = mix(holeC, vec3(.012, .008, .006), smoothstep(.75, .98, holeE) * smoothstep(-.1, .6, holeD.y));   // Schatten unter dem oberen Rand
+        diffuseColor.rgb = mix(diffuseColor.rgb, holeC, holeIn);`)
       .replace('#include <normal_fragment_maps>', `
         // Relief aus der Normal-Textur der Rinde
         { vec3 tn = gBarkN; tn.xy *= mix(.6, 1.2, uRelief);
-          normal = normalize(-normalize(vTU) * tn.x + normalize(vTV) * tn.y + normal * max(tn.z, .2)); }`)
+          normal = normalize(-normalize(vTU) * tn.x + normalize(vTV) * tn.y + normal * max(tn.z, .2)); }
+        // Wulst am Lochrand: innen zur Öffnung hin geneigt, außen nach außen abfallend; innen ohne Rindenrelief
+        if (holeRim + holeIn > .001) {
+          vec3 dV = normalize(mat3(viewMatrix) * (uHoleR * holeD.x + uHoleU * holeD.y) + 1e-5);
+          float k = sin((holeE - 1.0) * 9.) * holeRim;                       // Wülste: abwechselnd zur Öffnung hin und weg
+          normal = normalize(normal * (1. - .3 * holeRim) + dV * k * .75);
+          normal = normalize(mix(normal, normalize(mat3(viewMatrix) * uHoleN), holeIn * .7)); }`)
       .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = roughness;');
   };
   return m;
@@ -1833,7 +1855,7 @@ const squirrel = (() => {
   }
   const qz = new THREE.Quaternion(), zAxis = new V(0, 0, 1);
   function frame(dt, t) {
-    const show = P > 5.95 && season !== 'winter';   // Test: nur im ausgewachsenen Baum
+    const show = P > 5.95 && season !== 'winter' && !moveIn;   // vor dem Einzug ist der Ast leer
     if (show && !placed) place();
     grp.visible = show && placed && !(window.__seqActive && window.__seqActive());
     if (!ast) buildAst();
@@ -1940,7 +1962,7 @@ const seqPlayer = (() => {
   return { play, frame, late, active, get playing() { return t0 >= 0 && playing; }, get total() { return TOTAL; }, sprite: spr, nut };
 })();
 window.__seqActive = () => seqPlayer.playing;
-window.__sqLate = () => { seqPlayer.late(); squirrel.late(); };
+window.__sqLate = () => { seqPlayer.late(); squirrel.late(); winterFx.late(); };
 // Fenster im Laub vor Wohnast und Liegeplatz
 // Laubfenster nur, solange die Kamera nah dran ist (sonst hängen riesige Blätter direkt vor der Linse)
 let leafWin = false;
@@ -1989,7 +2011,7 @@ window.__sqFrame = (dt, t) => {
     const azNow = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
     const dir = new V(Math.sin(azNow) * Math.cos(el), Math.sin(el), Math.cos(azNow) * Math.cos(el));
     const tgt = stageToWorld(seqCam.x, 0.95 + 0.35 * Math.min(1, Math.max(0, (seqCam.x + 0.5) / 1.2)), 0);
-    const k = seqCam.k * seqCam.k * (3 - 2 * seqCam.k);
+    const k = seqCam.k * seqCam.k * (3 - 2 * seqCam.k) * 0.45;   // Einzug: Kamera nur leicht heran (Nutzer 23.10.)
     camera.position.lerp(tgt.clone().addScaledVector(dir, D), k);
     camera.lookAt(controls.target.clone().lerp(tgt, k));
   }
@@ -2335,7 +2357,7 @@ function yearFrame(dt) {
   while (driftAcc > 1) { driftAcc -= 1; stageFx.drift(1); }
 }
 
-let trans = null;
+let trans = null, moveIn = 0;   // moveIn 1: Übergang über Stufe 6 läuft, Eichhörnchen zieht danach ein
 const nowMs = () => window.__vt ?? performance.now();   // Testuhr für Prüf-Skripte
 // Übergang zur Zielstufe; mehrere Stufen auf einmal = ein einziger, etwas längerer Übergang
 function startTransition(target) {
@@ -2347,7 +2369,13 @@ function startTransition(target) {
   const n = target - from;
   const grow = from === 0 ? 5200 + 1000 * Math.min(3, n - 1) : 3000 + 1000 * Math.min(3, n - 1);
   trans = { t0: nowMs(), from, target, grow, start: 800, fell: false };
+  if (from < 6 && target >= 6) moveIn = 1;
   trans.end = trans.start + grow + 2600;
+}
+function startMoveIn() {
+  moveIn = 0;
+  if (season === 'winter') { winterFx.start(true); return; }   // Winter-Einzug: gleich ins Astloch (winter.js)
+  seqCam.x = -1.3; zoom.seq = zoom.seqNow = 1; seqPlayer.play();
 }
 function transFrame(now, dt) {
   const baseWind = reduceMotion ? 0 : 1;
@@ -2365,7 +2393,7 @@ function transFrame(now, dt) {
     const k = trans.from === 0 ? 1 - Math.pow(1 - u, 2.2) : u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
     P = trans.from + (trans.target - trans.from) * k;
     if (!trans.fell && e > trans.start + trans.grow * 0.65) { trans.fell = true; stageFx.spawn(); }
-    if (e > trans.end) { P = trans.target; trans = null; leafUniforms.uGust.value = 0; tubeUniforms.uBend.value = 0; leafUniforms.uWind.value = baseWind; }
+    if (e > trans.end) { P = trans.target; trans = null; leafUniforms.uGust.value = 0; tubeUniforms.uBend.value = 0; leafUniforms.uWind.value = baseWind; if (moveIn === 1) startMoveIn(); }
   }
   // Testuhr: Zeitschritt aus der Uhr selbst (Screenshots erzeugen Zusatzbilder)
   const dtv = window.__vt != null ? Math.max(0, (now - (transFrame.last ?? now)) / 1000) : dt;
@@ -2374,6 +2402,8 @@ function transFrame(now, dt) {
   stageFx.frame(dtv, now / 1000);
   jayFx.frame();
   visitFx.frame();
+  holeFx.frame();
+  winterFx.frame();
 }
 window.__trans = () => trans;
 
@@ -2772,7 +2802,7 @@ const visitFx = (() => {
   return { play, frame, stop, get active() { return active; }, get focus() { return active ? focusX : null; }, DUR: TA + TB + TC };
 })();
 
-// Kamera während des Besuchs: rückt sanft etwas näher an den Häher (sonst ist er in der Weitsicht zu klein) und am Ende zurück
+// Kamera während des Besuchs: rückt sanft ein wenig näher an den Häher und am Ende zurück
 const visitCam = { k: 0, x: 0 };
 function visitCamFrame(dt) {
   const f = visitFx.focus, want = f != null ? 1 : 0;
@@ -2784,11 +2814,204 @@ function visitCamFrame(dt) {
   const t = controls.target, offs = camera.position.clone().sub(t), dist = offs.length();
   const tgt = stageToWorld(visitCam.x * 0.75, 0.32, 0.25);
   const near = tgt.clone().addScaledVector(offs.normalize(), Math.min(dist, 4.2));
-  const k = visitCam.k * visitCam.k * (3 - 2 * visitCam.k) * 0.8;
+  const k = visitCam.k * visitCam.k * (3 - 2 * visitCam.k) * 0.35;   // nur leicht heran (Nutzer 23.10.)
   camera.position.lerp(near, k);
   camera.lookAt(t.clone().lerp(tgt, k));
 }
 
+// Baumloch: Lage am Stamm (einmal aus der Stammachse), sichtbar ab Stufe 6
+const holeFx = (() => {
+  // Astloch: klein, an der rechten Stammseite (Wohnast-Seite), etwas über der Kletterstelle. Für die Eule später größer:
+  // z. B. { y: 2.2, ang: 15°, rx: 0.105, ry: 0.14 }
+  const H = { y: 1.25, ang: 24 * Math.PI / 180, rx: 0.068, ry: 0.074 };   // fast rund, so breit wie der Körper des Eichhörnchens
+  let placed = false, seg = null; const A = new V(), U = new V(), N = new V(), Rr = new V();
+  function place() {
+    if (!tree || !tree.pos || !rad) return;
+    const kids = {}; for (let i = 1; i < tree.parent.length; i++) (kids[tree.parent[i]] = kids[tree.parent[i]] || []).push(i);
+    let i = 0, prev = null;
+    for (let k = 0; k < 400; k++) {
+      const c = kids[i]; if (!c || !c.length) break;
+      const j = c.reduce((a, b) => rad[b] > rad[a] ? b : a);
+      if (tree.pos[i].y <= H.y && tree.pos[j].y >= H.y) { prev = [i, j]; break; }
+      i = j;
+    }
+    if (!prev) return;
+    const a = tree.pos[prev[0]], b = tree.pos[prev[1]], u = (H.y - a.y) / Math.max(1e-6, b.y - a.y); seg = [prev[0], prev[1], u];
+    A.copy(a).lerp(b, u); U.copy(b).sub(a).normalize();
+    N.copy(STAGE_D).multiplyScalar(Math.cos(H.ang)).addScaledVector(STAGE_R, Math.sin(H.ang));
+    N.addScaledVector(U, -N.dot(U)).normalize(); Rr.crossVectors(U, N).normalize();
+    tubeUniforms.uHoleA.value.copy(A); tubeUniforms.uHoleN.value.copy(N); tubeUniforms.uHoleR.value.copy(Rr); tubeUniforms.uHoleU.value.copy(U);
+    tubeUniforms.uHoleS.value.set(H.rx, H.ry, 0);
+    placed = true; window.__hole = { A: A.toArray(), N: N.toArray(), U: U.toArray(), R: Rr.toArray() };
+  }
+  function frame() {
+    if (!placed) place();
+    tubeUniforms.uHoleS.value.z = placed ? smooth((P - 5.5) / 0.5) : 0;
+  }
+  // Stammradius an der Lochhöhe (wächst mit der Stufe; dazu der Wurzelanlauf wie im Rinden-Shader, grob)
+  function radius() { if (!seg || !rad) return 0.3; return (rad[seg[0]] * (1 - seg[2]) + rad[seg[1]] * seg[2]) * (1 + Math.exp(-H.y * 2.4) * 1.1); }
+  return { frame, radius, get placed() { return placed; }, A, N, U, R: Rr, H };
+})();
+
+// ------------------------------------------------------------------ Eichhörnchen im Winter: Astloch, Ausflüge (23.10.)
+// Im Winter wohnt das Eichhörnchen im kleinen Astloch an der rechten Stammseite (holeFx). Ab und zu kommt es heraus,
+// klettert den Stamm hinunter, läuft aus dem Bild, kommt nach kurzer Zeit mit einer Eichel zurück und verschwindet
+// wieder im Loch. Wächst der Baum im Winter auf Stufe 6, ist der Einzug dieser Rückweg (ohne Hinweg).
+// Bilder und Wege: dieselben wie beim Einzug (gebackene Abfolge SEQS je Stufe: Lauf über die Wiese, Klettern); vom
+// Ende des Kletterns klettert es weiter, leicht schräg, bis zum Loch (schmale Kletterbilder bleiben auf der Stammseite,
+// die breiten Laufbilder ragten am Stammrand ins Leere). Am Loch (Nutzer 23.10. abends: „soll ins Loch gehen, nicht
+// drunter krabbeln“): was schon hinter der Lochmitte ist, sieht man nur noch in der Öffnung, dort wird es zum Inneren
+// hin dunkel; was darüber hinaus ragt, verdeckt die Rinde am oberen Lochrand. Heraus genauso, nur andersherum.
+// Die Kamera zoomt dabei nicht (Nutzer). Uhr läuft nur, solange der Baum läuft.
+const winterFx = (() => {
+  const loader = new THREE.TextureLoader(), tex = {};
+  for (const k of ['g4', 'g5', 'g6', 'g7', 'g8', 'k0', 'k1', 'k2', 'k3', 'k4', 'eichel']) { const t = loader.load(SEQIMG[k]); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; tex[k] = t; }
+  // Öffnung, wie man sie sieht: das dunkle Loch samt innerem Wulstring (so passt der Körper hindurch); seitlich durch die
+  // Stammrundung etwas schmaler
+  const OPEN = () => ({ x: holeFx.H.rx * 1.05, y: holeFx.H.ry * 1.12 });
+  // Schnitt am Loch: uHc Lochmitte (Bild-Koordinaten 0…1), uHs Bildgröße, uHk cos/sin der Drehung, uHr Öffnung (Halbachsen),
+  // uHm Richtung (+1 hinein: vorn = Bild-oben, −1 heraus: Bild ist kopfüber, „drin“ liegt bei Bild-unten), 0 = kein Schnitt
+  const hc = { value: new THREE.Vector2() }, hs = { value: new THREE.Vector2(1, 1) }, hk = { value: new THREE.Vector2(1, 0) },
+    hr = { value: new THREE.Vector2(1, 1) }, hm = { value: 0 };
+  const mk = (order, clipped) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: tex.k0, transparent: true, alphaTest: 0.05, side: THREE.DoubleSide, depthTest: true, depthWrite: false, toneMapped: false }));
+    // eigener Programm-Schlüssel: die Nachtfärbung hüllt onBeforeCompile ein, sonst teilte sich das Bild das Programm ohne Schnitt
+    if (clipped) m.material.customProgramCacheKey = () => 'winterClip2';
+    if (clipped) m.material.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, { uHc: hc, uHs: hs, uHk: hk, uHr: hr, uHm: hm });
+      sh.fragmentShader = 'uniform vec2 uHc; uniform vec2 uHs; uniform vec2 uHk; uniform vec2 uHr; uniform float uHm;\n' + sh.fragmentShader.replace('#include <map_fragment>',
+        `#include <map_fragment>
+  if (uHm != 0.) {
+    vec2 o = (vMapUv - uHc) * uHs;                                   // vom Lochmittelpunkt, Bild-Achsen
+    vec2 wv = vec2(uHk.x * o.x - uHk.y * o.y, uHk.y * o.x + uHk.x * o.y); // Bühnen-Achsen
+    float e = length(wv / uHr);                                       // < 1: in der Öffnung
+    float w = uHm * o.y / uHr.y;                                      // > 0: schon hinter der Lochmitte (im Stamm)
+    if (w > 0. && e >= 1.) discard;                                   // hinter der Rinde über dem Loch
+    // zum Inneren hin dunkel; vorn läuft das am Lochrand aus (dort geht das Bild in den Teil vor der Rinde über)
+    float deep = smoothstep(-.6, .45, w) * mix(1. - smoothstep(.8, 1., e), 1., smoothstep(-.2, .2, w));
+    diffuseColor.rgb *= mix(1., .05, deep);
+  }`);
+    };
+    m.material.color.setScalar(0.94); m.renderOrder = order; m.visible = false; scene.add(m); return m;
+  };
+  const spr = mk(22, true), nut = mk(23, false); nut.material.map = tex.eichel;
+  // Nasenspitze je Bild (Anteil von Breite/Höhe, von oben links) – dort trägt es die Eichel
+  const NOSE = { g4: [0.97, 0.43], g5: [0.97, 0.45], g6: [0.96, 0.67], g7: [0.96, 0.6], g8: [0.97, 0.52],
+    k0: [0.97, 0.18], k1: [0.9, 0.12], k2: [0.63, 0.05], k3: [0.8, 0.07], k4: [0.85, 0.07] };
+  const CLIMBF = ['k0', 'k1', 'k2', 'k3', 'k4'], SPEED = 0.9, FR = 70;   // weiter klettern bis zum Loch: u/s, ms je Bild
+  const HEADX = 0;      // Versatz der Körperachse zur Bildmitte (Anteil der Breite, + = Bild-rechts): Kopf rechts, Rumpf links davon – Mitte passt
+  const q = new THREE.Quaternion(), zA = new V(0, 0, 1);
+  let path = null, mode = '', vt = 0, last = 0, next = -1, away = 0, hole = null;
+  // Pfad: Einzugs-Abfolge bis zum Ende des Kletterns, dann schräg zum Loch und hindurch
+  function build(st) {
+    const q0 = SEQS[st] || SEQ, S = q0.samples;
+    let end = 0; for (let i = 0; i < S.length; i++) { if (S[i][0][0] === 'k') end = i; else if (end && S[i][0][0] !== 'k') break; }
+    const pts = S.slice(0, end + 1).map(s => ({ k: s[0], x: s[1], y: s[2], z: s[3], r: s[4], d: s[5] }));
+    const H = holeStage(); if (!H) return null;
+    const a0 = pts[pts.length - 1], f = SEQ.frames.k2, O = OPEN();
+    // Kopf voran (Bild-oben) in Richtung Loch; Bildmitte so versetzt, dass der Kopf durch die Lochmitte geht
+    const ang = Math.atan2(H.y - a0.y, H.x - a0.x), rot = ang - Math.PI / 2, c = Math.cos(ang), s = Math.sin(ang);
+    const head = f.h * 0.46, side = f.w * HEADX;                          // Bild-rechts = (s, −c)
+    const hx = H.x - s * side, hy = H.y + c * side;                       // Linie der Bildmitte
+    const dx0 = hx - c * head - a0.x, dy0 = hy - s * head - a0.y;
+    // bis auch die Schwanzspitze hinter dem oberen Lochrand ist
+    const len = Math.hypot(dx0, dy0) + f.h * 1.0 + O.y * 1.15, ux = dx0 / Math.hypot(dx0, dy0), uy = dy0 / Math.hypot(dx0, dy0);
+    const n = Math.max(2, Math.round(len / SPEED * 1000 / FR));
+    // Tiefe: immer etwas vor der Rinde (sonst verdeckt der Stamm das Bild; das Hineinkriechen macht der Schnitt am Loch)
+    const zEnd = Math.max(H.z + 0.16, a0.z - 0.05);
+    for (let i = 1; i <= n; i++) {
+      const d = i / n * len;
+      pts.push({ k: CLIMBF[i % 5], x: a0.x + ux * d, y: a0.y + uy * d, z: a0.z + (zEnd - a0.z) * Math.min(1, d / Math.max(1e-3, len - f.h)), r: rot, d: FR, diag: true });
+    }
+    let t = 0; for (const p of pts) { p.t = t; t += p.d; }
+    return { pts, total: t, H, ang };
+  }
+  // Lochmitte in Bühnen-Koordinaten (x entlang STAGE_R, y Höhe, z entlang STAGE_D), auf der Rinde
+  function holeStage() {
+    if (!holeFx.placed) return null;
+    const r = holeFx.radius() * 1.04, w = holeFx.A.clone().addScaledVector(holeFx.N, r);
+    return { x: w.dot(STAGE_R), y: w.y, z: w.dot(STAGE_D) };
+  }
+  function setQuad(m, key, x, y, z, rot, mirror) {
+    const f = SEQ.frames[key]; m.material.map = tex[key];
+    m.userData.ref = stageToWorld(x, y, SEQ.zref); m.userData.zd = z;
+    m.userData.base = new V(f.w * (mirror ? -1 : 1), f.h, 1);
+    m.quaternion.copy(STAGE_Q).multiply(q.setFromAxisAngle(zA, rot)); m.visible = true;
+  }
+  function late() { for (const m of [spr, nut]) if (m.visible && m.userData.ref) depthPlace(m, m.userData.ref, m.userData.base, m.userData.zd); }
+  // Stelle t (ms) im Pfad: vorwärts = Rückweg (mit Eichel), rückwärts = Hinweg
+  function at(t) {
+    const P2 = path.pts; let lo = 0, hi = P2.length - 1, i = 0;
+    while (lo <= hi) { const m = (lo + hi) >> 1; if (P2[m].t <= t) { i = m; lo = m + 1; } else hi = m - 1; }
+    return P2[i];
+  }
+  function show(p, back, withNut) {
+    // rückwärts: Laufbilder gespiegelt (läuft nach links), Kletterbilder kopfvoran nach unten – gedreht UND gespiegelt
+    // (= senkrecht gekippt), so bleibt der Bauch zum Stamm bzw. nach unten (Nutzer 23.10.: nur gedreht lag es „auf dem
+    // Rücken“) und passt zum Übergang ins Laufen unten (gespiegeltes Laufbild, hochgedreht)
+    const k = p.k, climb = k[0] === 'k';
+    const mirror = back, rot = back && climb ? p.r + Math.PI : p.r;
+    setQuad(spr, k, p.x, p.y, p.z, rot, mirror);
+    hm.value = 0;
+    const O = OPEN(), c = Math.cos(rot), s = Math.sin(rot), dir = back ? -1 : 1;
+    if (p.diag) {
+      // Am Loch: Lochmitte in Bild-Koordinaten; ganz hinter dem oberen Rand → gar nicht mehr zeichnen
+      const f = SEQ.frames[k], dx = path.H.x - p.x, dy = path.H.y - p.y;
+      const sx = mirror ? -1 : 1;                                         // gespiegelt: Bild-x läuft gegen Bild-rechts
+      const u = sx * (c * dx + s * dy) / f.w + 0.5, v = (-s * dx + c * dy) / f.h + 0.5;
+      hc.value.set(u, v); hs.value.set(sx * f.w, f.h); hk.value.set(c, s); hr.value.set(O.x, O.y); hm.value = dir;
+      const outer = back ? (1 - v) * f.h : v * f.h;                       // äußerstes Ende (Schwanz bzw. Kopf) bis zur Lochmitte
+      if (outer < -O.y * 1.02) spr.visible = false;
+    }
+    if (withNut) {
+      const f = SEQ.frames[k], nz = NOSE[k] || [0.95, 0.5], sx = mirror ? -1 : 1;
+      const nx = (nz[0] - 0.5) * f.w * sx, ny = (0.5 - nz[1]) * f.h;
+      const ex = p.x + c * nx - s * ny, ey = p.y + s * nx + c * ny - 0.02;
+      let shade = 1, hidden = false;
+      if (p.diag) {
+        // Eichel an der Nase: wie das Bild – in der Öffnung dunkler, dahinter weg
+        const ox = ex - path.H.x, oy = ey - path.H.y, w = dir * (-s * ox + c * oy) / O.y, e = Math.hypot(ox / O.x, oy / O.y);
+        hidden = w > 0.55 || (w > 0 && e > 0.85);
+        const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+        const deep = sm(-0.6, 0.45, w) * (w < 0 ? 1 - sm(0.8, 1, e) : 1);
+        shade = 1 - 0.95 * deep;
+      }
+      if (hidden) nut.visible = false;
+      else { const fe = SEQ.frames.eichel; nut.material.map = tex.eichel; nut.material.color.setScalar(0.94 * shade);
+        nut.userData.ref = stageToWorld(ex, ey, SEQ.zref); nut.userData.zd = p.z - 0.01;
+        nut.userData.base = new V(fe.w, fe.h, 1); nut.quaternion.copy(STAGE_Q).multiply(q.setFromAxisAngle(zA, rot - 0.3)); nut.visible = true; }
+    } else nut.visible = false;
+  }
+  function hide() { spr.visible = nut.visible = false; hm.value = 0; }
+  const can = () => P > 5.95 && season === 'winter' && !reduceMotion && !__isNight() && !trans && !moveIn && !jayFx.active && !visitFx.active && !seqPlayer.active();
+  // Ausflug: 'out' (aus dem Loch, aus dem Bild), Pause, 'in' (mit Eichel zurück ins Loch)
+  function start(onlyIn) {
+    path = build(Math.min(10, Math.max(6, Math.round(P)))); if (!path) return false;
+    mode = onlyIn ? 'in' : 'out'; vt = 0; last = nowMs(); return true;
+  }
+  function frame() {
+    const now = nowMs(), dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+    if (!mode) {
+      hide();
+      if (next < 0) next = 15 + Math.random() * 25;                       // erster Ausflug nach 15–40 s
+      if (can()) { next -= dt; if (next <= 0 && !window.__winterHold) { start(false); next = 90 + Math.random() * 90; } }
+      return;
+    }
+    if (P < 5.95 || season !== 'winter') { mode = ''; hide(); return; }
+    vt += dt * 1000; const t = window.__winterT ?? vt;
+    if (mode === 'out') {
+      if (t >= path.total) { mode = 'away'; away = 4000 + Math.random() * 4000; vt = 0; hide(); return; }
+      show(at(path.total - t), true, false);
+    } else if (mode === 'away') {
+      hide(); if (t >= away) { mode = 'in'; vt = 0; }
+    } else if (mode === 'in') {
+      if (t >= path.total) { mode = ''; hide(); return; }
+      show(at(t), false, true);
+    }
+  }
+  return { frame, late, start, stop() { mode = ''; hide(); }, get active() { return !!mode; }, get mode() { return mode; }, get total() { return path ? path.total : 0; } };
+})();
+window.__winterFx = winterFx;   // für Prüf-Skripte
 // ------------------------------------------------------------------ Bedienung
 const slider = $id('slider');
 const stageLbl = $id('stagelbl');
@@ -2943,7 +3166,7 @@ const __api = {
   ready: __ready,
   canvas: renderer.domElement,
   /** Stufe direkt setzen (ohne Übergang) */
-  setStage(n) { anim = null; trans = null; P = n; visitFx.stop(); },
+  setStage(n) { anim = null; trans = null; moveIn = 0; P = n; visitFx.stop(); },
   /** zur Stufe n wachsen – mit Windstoß und fallenden Blättern (mehrere Stufen = ein längerer Übergang) */
   grow(n) { startTransition(n); },
   get stage() { return P; },
@@ -2956,7 +3179,9 @@ const __api = {
   /** Besuch des Eichelhähers (ab Stufe 1, ca. 12 s); false, wenn er gerade nicht kommen kann. o: { dir: ±1, x } */
   visit(o) { return P >= 0.98 && !trans && !jayFx.active ? visitFx.play(o) : false; },
   /** läuft gerade ein Übergang, der Start oder ein Besuch? */
-  get busy() { return !!trans || !!anim || jayFx.active || visitFx.active; },
+  get busy() { return !!trans || !!anim || !!moveIn || jayFx.active || visitFx.active || seqPlayer.active() || winterFx.active; },
+  /** Test: Ausflug des Eichhörnchens im Winter jetzt starten (true: nur der Rückweg ins Loch) */
+  winterTrip(onlyIn) { return winterFx.start(!!onlyIn); },
   /** anhalten: die Leinwand zeigt weiter das letzte Bild (Standbild) */
   pause() { if (__running) { renderer.setAnimationLoop(null); __running = false; } },
   resume() { if (!__running && __loop) { __resumed = true; renderer.setAnimationLoop(__loop); __running = true; } },

@@ -4,28 +4,14 @@
   "candidates": [
     {
       "left": {
-        "id": 2668745,
-        "text": "Mene nukkumaan!",
-        "level": 2
-      },
-      "right": {
         "id": 4562316,
         "text": "Mene nukkumaan.",
         "level": 2
       },
-      "match": "exact",
-      "similarity": 1
-    },
-    {
-      "left": {
-        "id": 4896913,
-        "text": "Tomi on hukkumaisillaan.",
-        "level": 5
-      },
       "right": {
-        "id": 4896917,
-        "text": "Tomi on hukkumaisillaan!",
-        "level": 5
+        "id": 2668745,
+        "text": "Mene nukkumaan!",
+        "level": 2
       },
       "match": "exact",
       "similarity": 1
@@ -40,6 +26,20 @@
         "id": 4896916,
         "text": "Tomi hukkuu!",
         "level": 3
+      },
+      "match": "exact",
+      "similarity": 1
+    },
+    {
+      "left": {
+        "id": 4896917,
+        "text": "Tomi on hukkumaisillaan!",
+        "level": 5
+      },
+      "right": {
+        "id": 4896913,
+        "text": "Tomi on hukkumaisillaan.",
+        "level": 5
       },
       "match": "exact",
       "similarity": 1
@@ -130,13 +130,13 @@
     },
     {
       "left": {
-        "id": 6946881,
-        "text": "Kirjoita minulle jotakin.",
+        "id": 6947231,
+        "text": "Kirjoita minulle jotain.",
         "level": 2
       },
       "right": {
-        "id": 6947231,
-        "text": "Kirjoita minulle jotain.",
+        "id": 6946881,
+        "text": "Kirjoita minulle jotakin.",
         "level": 2
       },
       "match": "near",
