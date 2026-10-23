@@ -148,7 +148,8 @@ try{
   await page.locator('#classrooms-button').click();teacher=true;
   await page.locator('[data-cr=open]').click();await page.locator('[data-cr=assignment]').first().click();
   // Zweite Abgabe, damit es einen Überblick gibt: beide haben „me“ zusätzlich, eine Antwort zu Satz 1 stimmt
-  room.assignments[0].submissions.push({id:'submission-2',answers:['Sinä olet ihminen.','Tänään me opiskelemme yhdessä!'],author_id:'s2',author:'Mika',reactions:{},feedback:[]});room.assignments[0].submitted_count=2;
+  // (Satz 1 = der erste vorhandene Satz der Auswahl; nicht fest eintragen, der Satzbestand ändert sich)
+  room.assignments[0].submissions.push({id:'submission-2',answers:[room.assignments[0].items[0].text,'Tänään me opiskelemme yhdessä!'],author_id:'s2',author:'Mika',reactions:{},feedback:[]});room.assignments[0].submitted_count=2;
   await page.locator('#classrooms-refresh').click();await page.locator('.cr-stream-layout').waitFor();await page.locator('[data-cr=assignment]').first().click();await page.locator('.cr-overview').waitFor();
   const rows=page.locator('.cr-overview-row');assert.equal(await rows.count(),2);
   assert.match((await rows.nth(0).locator('.cr-overview-tally').textContent()).replace(/\s+/g,' '),/1 wie die Vorlage.*1 anders formuliert/);
