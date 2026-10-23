@@ -31,11 +31,14 @@ export function createSky(){
  button.type='button';button.className='sky-toggle';
  button.innerHTML='<svg viewBox="-20 -20 40 40" aria-hidden="true" focusable="false"><defs><clipPath id="sky-toggle-clip"><circle r="19"/></clipPath></defs><g clip-path="url(#sky-toggle-clip)"></g></svg>';
  const icon=button.querySelector('g');
- // Desktop: rechts neben dem Logo vor „heute geübt“; am Handy vorn in der Knopfreihe (sonst bräuchte er eine eigene Zeile)
+ // Desktop: rechts neben dem Logo vor „heute geübt“. Am Handy mit Konto vorn in der Knopfreihe (oben rechts steht
+ // „heute geübt“); ohne Konto oben rechts neben dem Logo, damit „Anmelden / Registrieren“ in der Reihe Platz hat.
  const brand=document.querySelector('header>.brand'),nav=document.querySelector('header .header-nav');
  const narrow=typeof matchMedia==='function'?matchMedia('(max-width: 700px)'):null;
- const place=()=>{if(narrow?.matches&&nav){if(button.parentElement!==nav)nav.prepend(button);}else if(button.previousElementSibling!==brand)brand?.after(button);};
+ const guest=()=>document.documentElement.classList.contains('is-guest');
+ const place=()=>{if(narrow?.matches&&nav&&!guest()){if(button.parentElement!==nav)nav.prepend(button);}else if(button.previousElementSibling!==brand)brand?.after(button);};
  place();narrow?.addEventListener?.('change',place);
+ new MutationObserver(place).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
 
  let p=isNight()?1:0,from=p,target=p,t0=0,raf=0,switched=true;
  function label(){const night=target>.5;button.setAttribute('aria-label',night?'Sonne aufgehen lassen':'Sonne untergehen lassen');button.title=night?'Tag':'Nacht';button.setAttribute('aria-pressed',String(night));}

@@ -4,7 +4,7 @@ import {mergeEndingsProgress} from './endings-progress.mjs?v=1';
 import {mergePerformanceEvents} from './learning-insights.mjs';
 import {mergeGames} from './games-progress.mjs';
 import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,TURNSTILE_SITE_KEY} from './supabase-config.js?v=2';
-import {accountProfile,avatarSVG,avatarPickerMarkup,bindAvatarPicker,cleanNickname,isAvatar,randomAvatar,NICKNAME_MAX} from './avatars.mjs?v=2';
+import {accountProfile,avatarSVG,avatarPickerMarkup,bindAvatarPicker,cleanNickname,isAvatar,randomAvatar,NICKNAME_MAX} from './avatars.mjs?v=5';
 
 const STORE='suomi-learning-v1';
 const SESSION='suomi-auth-session-v1';
@@ -525,7 +525,14 @@ function bind(){
   if($('storage-account-link'))$('storage-account-link').onclick=()=>openAccount('login');
   onboardingPicker=bindAvatarPicker($('account-onboarding'),'');profilePicker=bindAvatarPicker($('profile-form'),'');
   // Wer Schritt 2 schließt, überspringt ihn nur – der Wiederherstellungscode muss danach trotzdem noch erscheinen.
-  $('close-account').onclick=()=>{if(accountStage==='onboarding')finishOnboarding(true);else $('account-dialog').close();};
+  const closeAccount=()=>{if(accountStage==='onboarding')finishOnboarding(true);else $('account-dialog').close();};
+  $('close-account').onclick=closeAccount;
+  // Klick neben das Fenster (auf den abgedunkelten Hintergrund) schließt es wie das ✕. Gedrückt und losgelassen werden muss
+  // beides außerhalb, damit z. B. ein Markieren im Feld, das draußen endet, das Fenster nicht schließt.
+  // Den einmalig gezeigten Wiederherstellungscode schließt nur „Fertig“ oder das ✕ – ein versehentlicher Klick daneben nicht.
+  {const dialog=$('account-dialog'),outside=e=>{const r=dialog.getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom;};let downOutside=false;
+   dialog.addEventListener('pointerdown',e=>{downOutside=e.target===dialog&&outside(e);});
+   dialog.addEventListener('click',e=>{const was=downOutside;downOutside=false;if(was&&e.target===dialog&&outside(e)&&accountStage!=='code')closeAccount();});}
   $('account-dialog').addEventListener('cancel',e=>{if(accountStage==='onboarding'){e.preventDefault();finishOnboarding(true);}});
   $('account-dialog').addEventListener('close',()=>{if(!accountStage)return;accountStage=null;$('recovery-code-result').textContent='';renderDialogSections();status('');});
   $('account-onboarding').onsubmit=e=>{e.preventDefault();finishOnboarding(false);};
@@ -597,7 +604,15 @@ export const accountUser=()=>session?.user||null;
 export {request as accountRequest};
 window.suomiAccountUser=()=>session?.user||null;
 window.suomiAccountRequest=request;
-import('./classrooms.js?v=106').catch(()=>{});
+// Kleine Kontodaten der App (z. B. der Baum: Pflanzdatum, Start gesehen) – user_metadata, Schlüssel werden ergänzt, nicht ersetzt.
+window.suomiAccountData=async data=>{
+  if(!session?.user)return null;
+  const r=await request('/auth/v1/user',{method:'PUT',body:JSON.stringify({data})});
+  const user=await r.json().catch(()=>null);
+  if(!r.ok||!user?.id||!session)throw new Error('Kontodaten konnten nicht gespeichert werden.');
+  saveSession({...session,user});return user;
+};
+import('./classrooms.js?v=110').catch(()=>{});
 import('./quality-review.js?v=8').catch(()=>{});
 if(session?.user&&configured())refreshSession().then(async ok=>{if(!ok)return;try{await pullAndMerge();}catch(err){syncState('Synchronisierung fehlgeschlagen. Bitte erneut versuchen.',true);status(err.message,true);}}).catch(syncError).finally(()=>{syncReady=true;if(syncQueued)scheduleSync();scheduleEmailHint();});
 else syncReady=true;

@@ -51,6 +51,9 @@ export function createHomeTabs({home,nav,isAccount,startReview,startNew,onChange
   if(active)onChange?.(current);
  }
  // Reiter gibt es nur mit Konto. „Weitere Übungen“ und die Route stehen dort offen da (keine Aufklapper).
+ // Desktop: Die Leiste haftet beim Scrollen oben (style.css); haftet sie, bekommt sie die Seitenfarbe (is-stuck).
+ const stuck=()=>nav.classList.toggle('is-stuck',!!active&&!fixed()&&scrollY>0&&nav.getBoundingClientRect().top<=.5);
+ if(typeof addEventListener==='function'){addEventListener('scroll',stuck,{passive:true});addEventListener('resize',stuck);}
  function sync(){
   const now=!!isAccount();
   if(now!==active){
