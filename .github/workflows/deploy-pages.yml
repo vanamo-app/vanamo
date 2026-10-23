@@ -18,7 +18,7 @@ jobs:
   # without any Pages permissions, so nothing they download can touch the
   # files that are published.
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # Playwright 1.55 kann seine Abhängigkeiten auf Ubuntu 26 (neues ubuntu-latest) nicht installieren
     timeout-minutes: 15
     steps:
       - name: Check out repository
