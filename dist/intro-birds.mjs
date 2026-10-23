@@ -167,8 +167,8 @@ export function createBirds(){
  const shown=el=>el&&!el.hidden&&el.getClientRects().length?el:null;
  const PERCH=[
   // Angemeldete: der „Draht“ unter den Reitern der Startseite, direkt neben dem gewählten Reiter (nicht am Handy,
-  // dort liegt die Leiste fest am unteren Rand)
-  ['wire',()=>{const nav=shown(document.getElementById('home-tabs'));if(!nav||getComputedStyle(nav).position==='fixed')return null;const tab=nav.querySelector('[aria-selected="true"]');if(!tab)return null;const n=rect(nav),t=rect(tab);return tab.dataset.homeTabButton==='new'?{l:t.r+8,r:t.r+40,t:n.b-1.5}:{l:t.l-40,r:t.l-8,t:n.b-1.5};},0],
+  // dort liegt die Leiste fest am unteren Rand, und nicht, solange die Leiste beim Scrollen oben haftet)
+  ['wire',()=>{const nav=shown(document.getElementById('home-tabs'));if(!nav||getComputedStyle(nav).position==='fixed'||nav.classList.contains('is-stuck'))return null;const tab=nav.querySelector('[aria-selected="true"]');if(!tab)return null;const n=rect(nav),t=rect(tab);return tab.dataset.homeTabButton==='new'?{l:t.r+8,r:t.r+40,t:n.b-1.5}:{l:t.l-40,r:t.l-8,t:n.b-1.5};},0],
   // der Hauptknopf: für Gäste an der Satzkarte, für Angemeldete „Aufgaben starten“
   ['button',()=>{const el=shown(document.querySelector('#guest-card .guest-first'))||shown(document.getElementById('start-daily-session'));return el&&rect(el);},0],
   // Angemeldete, Reiter „Willkommen“: auch der Knopf „Wiederholen“ (nicht „Neue Sätze“ – der liegt am Handy oft außer Sicht)

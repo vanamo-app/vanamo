@@ -118,7 +118,7 @@ try{
  assert.equal(await page.evaluate(()=>document.getElementById('account-dialog').open),false);
  assert.equal(await page.locator('#recovery-code-result').textContent(),'','der Code bleibt nicht im Fenster stehen');
  // Konto-Icon zeigt den Vogel, die Begrüßung den Spitznamen
- assert.equal(await page.locator('#account-button.has-bird svg.avatar-art').count(),1);
+ assert.equal(await page.locator('#account-button.has-bird .avatar-art img').count(),1);
  assert.equal(await page.locator('#account-button').getAttribute('aria-label'),'Konto');
  await page.waitForFunction(()=>/Lumi/.test(document.querySelector('#home-view .intro h1')?.textContent||''));
  // Konto verwalten: vorausgefüllt, ändern, speichern
@@ -162,7 +162,7 @@ try{
  assert.equal(await page.evaluate(()=>document.getElementById('profile-form').nextElementSibling.id),'account-status','Meldung steht direkt unter dem Formular');
  assert.deepEqual(s.userUpdates.at(-1),{data:{nickname:'Lumikki',avatar:'kurki'}});
  await page.click('#close-account');
- assert.match(await page.locator('#account-button svg').innerHTML(),/C8372D/,'Icon zeigt jetzt den Kranich');
+ assert.match(await page.locator('#account-button .avatar-art img').getAttribute('src'),/\/avatars\/kurki\.webp/,'Icon zeigt jetzt den Kranich');
  await page.waitForFunction(()=>/Lumikki/.test(document.querySelector('#home-view .intro h1')?.textContent||''));
  assert.deepEqual(s.errors,[]);
  await s.context.close();

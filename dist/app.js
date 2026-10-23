@@ -16,7 +16,7 @@ import {planVerbs,planEndings,interleave,alternate,verbCard,endingCard,NEW_ONLY_
 import {validateEndingsProgress,mergeEndingsProgress,markEndingAnswered,missedEndings} from './endings-progress.mjs?v=1';
 import {createGuestCard,shortGloss,flipWordIndex} from './guest-card.mjs?v=14';
 import {renderGreeting,renderToday,createDailySentence,animateProgress,GOAL_CHOICES,DAILY_GOAL} from './home-extras.mjs?v=15';
-import {createHomeTabs} from './home-tabs.mjs?v=3';
+import {createHomeTabs} from './home-tabs.mjs?v=4';
 import {hasBook,loadBook,loadChapter,stationsByTopic,readChapters,markRead,renderIndex,renderChapter,HASH as GRAMMAR_HASH} from './grammar-book.mjs?v=1';
 import {buildDifficultDeck} from './difficult-words.mjs?v=2';
 import {buildEndingItems,indexLexicon,renderEndings,hasEndingChoices} from './endings-practice.mjs?v=2';
@@ -355,6 +355,7 @@ function finishDailySession(){
 
 function renderStats(){
  syncWritingAvailability();
+ if(typeof mountHomeTreeLater==='function'){mountHomeTreeLater();if(homeTree&&homeTree!==true)homeTree.update();}
  const verbStats=verbSummary(VERBS,memory.verbProgress);
  $('verb-progress-summary').textContent=`${verbStats.seen} von ${verbStats.total} Formen gesehen · ${verbStats.secure} sicher · ${verbStats.due} zum Wiederholen`;
  $('home-verbs').hidden=activityLocked('verbs');
@@ -1244,7 +1245,7 @@ var homeTabs=typeof document!=='undefined'&&$('home-tabs')&&typeof $('home-tabs'
  onChange:tab=>{if(tab==='grammar')renderGrammarIndex($('grammar-index'),2);},
  startReview:()=>{if(!ready||$('start-daily-session').disabled)return false;startDailySession();return true;},
  startNew:()=>{if(!ready||$('start-new-sentences').disabled)return false;startNewSentences();return true;},}):null;
-function syncGuestHome(){document.documentElement.classList?.toggle('is-guest',!accountActive());homeTabs?.sync();if(typeof renderHomeExtras==='function')renderHomeExtras();syncActivityLocks();if(!guestCard)return;const guest=!accountActive()&&guestCard.available;syncPathCollapse(guest);syncGuestPathVisibility(guest);$('guest-card').hidden=!guest;if(!guest)guestCard.stop();else if(ready)guestCard.start();if(ready)renderDailyPlan();else document.querySelector('.home-daily').hidden=guest;}
+function syncGuestHome(){document.documentElement.classList?.toggle('is-guest',!accountActive());homeTabs?.sync();if(typeof mountHomeTreeLater==='function')mountHomeTreeLater();if(typeof renderHomeExtras==='function')renderHomeExtras();syncActivityLocks();if(!guestCard)return;const guest=!accountActive()&&guestCard.available;syncPathCollapse(guest);syncGuestPathVisibility(guest);$('guest-card').hidden=!guest;if(!guest)guestCard.stop();else if(ready)guestCard.start();if(ready)renderDailyPlan();else document.querySelector('.home-daily').hidden=guest;}
 syncGuestHome();
 if(typeof document!=='undefined'&&$('grammar-view')&&String(location.hash||'').startsWith('#'+GRAMMAR_HASH))grammarRoute();
 // Solange das Intro läuft (index.html: intro-pending, guest-intro.mjs: intro-running), wird nichts Schweres
@@ -1274,3 +1275,19 @@ try{const response=await sentencesRequest;if(!response.ok)throw new Error('load'
  loadedSentenceIds=new Set([...(payload.sentences||[]),...(Array.isArray(payload.archived_sentences)?payload.archived_sentences:[])].filter(s=>s?.translations?.length).map(s=>s.id));data=qualityFilteredCards(payload.sentences);if(Array.isArray(payload.levels))levels=payload.levels.map(l=>l.id).filter(Number.isInteger);if(!levels.includes(level)||levelLocked(level))level=levels[0]||1;archived=qualityFilteredCards(Array.isArray(payload.archived_sentences)?payload.archived_sentences:[]);if(!Array.isArray(data)||!data.length)throw new Error('empty');ready=true;start();homeLoaded();syncGuestHome();if(grammarAvailable_)afterIntro().then(loadGrammarBook);if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});}catch{$('card').className='card empty';$('card').innerHTML='<h2>Die Sätze konnten nicht geladen werden.</h2><p>Prüfe deine Verbindung und lade die Seite erneut.</p>';$('actions').innerHTML='<button class="primary" id="retry">Erneut versuchen</button>';$('retry').onclick=()=>location.reload();$('total').textContent='Sätze nicht verfügbar';homeLoaded();}
 mountWordLookup([$('practice-view')]);
 window.suomiDifficultDeck=async()=>buildDifficultDeck({lexicon:await loadLexicon(),reviews:memory.reviews,events:memory.performanceEvents,missed:[...endingsState.missed]});
+// Der Vanamo-Baum auf „Willkommen“ (home-tree.mjs, nur mit Konto): Platzhalter sofort, der 3D-Baum erst nach dem
+// Intro und mit kurzer Pause, damit er nicht mit dem Intro um Leitung und Prozessor konkurriert.
+// ohne Vorbelegung: mountHomeTreeLater() läuft schon früher (syncGuestHome) – ein „=null“ hier setzte das zurück und der Baum wurde zweimal eingerichtet
+var homeTree;
+function mountHomeTreeLater(){
+ if(homeTree||typeof document==='undefined'||!accountActive()||!$('home-tree'))return;
+ // Automatische Tests (wie beim Intro): ohne Baum, außer ein Test will ihn ausdrücklich (window.vanamoBaumTest).
+ if(navigator.webdriver&&!window.vanamoBaumTest)return;
+ homeTree=true;
+ // Das kleine Modul (Platzhalter, Fortschritt) gleich; den 3D-Baum lädt es selbst erst nach dem Intro.
+ const waitIntro=new Promise(res=>{const wait=()=>introActive()?setTimeout(wait,150):res();wait();}).then(()=>new Promise(r=>setTimeout(r,400)));
+ import('./home-tree.mjs?v=21')
+  .then(m=>{homeTree=m.mountHomeTree({getReviews:()=>memory.reviews,waitIntro});})
+  .catch(err=>{console.warn('Baum',err);homeTree=null;});
+}
+mountHomeTreeLater();

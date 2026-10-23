@@ -34,6 +34,14 @@ Die Schriften werden lokal aus `dist/fonts/` ausgeliefert (keine Verbindung zu G
 - Fraunces – Copyright 2020 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces), `dist/fonts/OFL-Fraunces.txt`
 - Bezogen über Fontsource (`@fontsource-variable/dm-sans`, `@fontsource-variable/fraunces`, Version 5).
 
+## Vanamo-Baum (Startseite „Willkommen“)
+
+`dist/baum/` enthält den Baum (aus der eigenen Werkstatt erzeugt), `dist/vendor/three/` die dafür nötige 3D-Bibliothek.
+
+- three.js 0.160.0 – Copyright 2010-2023 Three.js Authors, MIT-Lizenz, `dist/vendor/three/LICENSE` (https://threejs.org/)
+- Rindentextur „Bark Willow“ von Poly Haven, CC0 (https://polyhaven.com/a/bark_willow)
+- Blätter, Wiese und Baumform sind eigene Arbeit; die Tierbilder (Eichhörnchen, Eichelhäher) sind eigene, mit Recraft erzeugte Illustrationen.
+
 ## Spiel Mustikka Hyppy (Bereich „Spiele“)
 
 `dist/games/hyppy/` enthält den Einbettungs-Build des eigenen Spiels Mustikka Hyppy; `dist/games/previews/` enthält Vorschaubild und -video.

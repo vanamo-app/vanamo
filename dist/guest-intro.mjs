@@ -37,7 +37,7 @@ const T={
 const EASE_MOVE='cubic-bezier(.65,0,.25,1)',EASE_OUT='cubic-bezier(.2,.7,.2,1)';
 const SEEN='vanamo-intro-seen';
 
-import {createBirds,createIntroFlock,warmIntroFlock,guestLeft} from './intro-birds.mjs?v=21';
+import {createBirds,createIntroFlock,warmIntroFlock,guestLeft} from './intro-birds.mjs?v=22';
 
 // Das Intro spielt ganz oben. Manche Browser (z. B. DuckDuckGo) stellen nach dem Wiederöffnen die alte Scroll-Position
 // erst her, wenn das Intro schon läuft – dann sähe man es gar nicht. Solange es läuft, bleibt die Seite deshalb oben;
@@ -319,8 +319,12 @@ export async function runUserIntro(){
   card.classList.add('intro-bare','intro-shown','intro-write');
   // Der Satz steht auf der Seite unter „Wiederholen“. Im Intro wird er weiter oben geschrieben – dort, wo gleich
   // die Aufgaben stehen – und gleitet danach an seinen Platz (auf dem Handy läge er sonst am unteren Rand).
-  const above=document.querySelector('#home-view .home-daily');
-  const lift=above&&!above.hidden&&above.getClientRects().length?Math.min(0,above.getBoundingClientRect().top-card.getBoundingClientRect().top):0;
+  // Mit dem Baum (Reiter „Willkommen“) steht der Satz weiter unten: Dann wird er mitten im Platz des Baums
+  // geschrieben (der Baum blendet erst nach dem Intro ein).
+  const above=document.querySelector('#home-view .home-daily'),tree=document.querySelector('#home-view>.home-tree');
+  const treeBox=tree&&tree.getClientRects().length?tree.getBoundingClientRect():null,cardBox=card.getBoundingClientRect();
+  const lift=treeBox?Math.min(0,(treeBox.top+treeBox.bottom)/2-(cardBox.top+cardBox.bottom)/2)
+   :above&&!above.hidden&&above.getClientRects().length?Math.min(0,above.getBoundingClientRect().top-cardBox.top):0;
   // … und zwar groß wie auf der Gäste-Startseite; beim Gleiten schrumpft er auf seine Größe auf der Seite.
   const wordsEl=card.querySelector('.daily-words'),fi=card.querySelector('.daily-words .guest-fi');
   const wr=wordsEl.getBoundingClientRect(),cr=card.getBoundingClientRect(),now=parseFloat(getComputedStyle(fi).fontSize)||28;
