@@ -1,0 +1,169 @@
+# Doppelte und fast gleiche Sätze (Prüfliste 23.10.2026, vom Nutzer entschieden). Sie werden archiviert statt gelöscht:
+# bestehende Wiederholungen und Favoriten bleiben erhalten, neu gelernt wird nur noch der bleibende Satz (keep_id).
+sentence_id	keep_id	kind	text	keep_text
+2668745	4562316	doppelung	Mene nukkumaan!	Mene nukkumaan.
+4896916	4896914	doppelung	Tomi hukkuu!	Tomi hukkuu.
+4896913	4896917	doppelung	Tomi on hukkumaisillaan.	Tomi on hukkumaisillaan!
+10090703	2160582	doppelung	En ole täällä huomenna.	Huomenna en ole täällä.
+6946881	6947231	doppelung	Kirjoita minulle jotakin.	Kirjoita minulle jotain.
+1590030	5468529	doppelung	Rauhoitu!	Rauhoitu rauhoitu.
+3405013	3365881	doppelung	Pidähän kivaa!	Pidä kivaa!
+3405016	3365884	doppelung	Pitäkäähän kivaa!	Pitäkää kivaa!
+4172283	4172281	doppelung	Syödään yhes.	Syödään yhessä.
+6930572	6930571	doppelung	Myös Tomilla on hauskaa.	Tomilla on myös hauskaa.
+7248991	7248990	doppelung	Ei sinua kukaan vihaa.	Kukaan ei vihaa sinua.
+6146559	5539258	doppelung	Asuin kymmenen vuotta ulkomailla.	Asuin ulkomailla kymmenen vuotta.
+5287725	5287724	doppelung	Mulla on tatska.	Mul on tatska.
+356199	7584848	gleiche_woerter	Minä rakastan sinua.	Mä rakastan sua.
+1178596	6584407	gleiche_woerter	Oletko naimisissa?	Ooksä naimisis?
+2311391	2786311	gleiche_woerter	Tom on sairas.	Tom on sairaana.
+8620816	2668769	gleiche_woerter	Olepa hyvä.	Ole hyvä.
+3373777	2840873	gleiche_woerter	Hän on sairaana.	Hän on sairas.
+3366217	3142608	gleiche_woerter	Kotona ollaan!	Olemme kotona.
+3216658	6162132	gleiche_woerter	Minulla on paljon rahaa.	Mul on paljon rahaa.
+3374803	3374632	gleiche_woerter	Mulla on nälkä!	Minulla on nälkä!
+6771670	6771671	gleiche_woerter	Minä tanssin.	Mä tanssin.
+10342657	4176159	gleiche_woerter	Etsin töitä.	Etsin työtä.
+4412781	419607	gleiche_woerter	Hän on vielä töissä.	Hän on vielä työssä.
+3319307	3319301	gleiche_woerter	Me tiedetään jo.	Me tiedämme jo.
+3405018	3404997	gleiche_woerter	Pitäkäähän hauskaa!	Pidähän hauskaa!
+4172284	4172279	gleiche_woerter	Syyää yhessä.	Syödään yhdessä.
+4366410	4366412	gleiche_woerter	Mene etsimään sitä.	Mene etsimään se.
+5156598	5156602	gleiche_woerter	Menikö se hyvin?	Menik se hyvin?
+5488903	5488902	gleiche_woerter	Mä haluun auttaa.	Minä haluan auttaa.
+6163093	6163092	gleiche_woerter	Mul on auto.	Minulla on auto.
+3368495	3366371	gleiche_woerter	Upeeta!	Upeaa!
+3525680	3525681	gleiche_woerter	Voinko lainata sitä?	Voinko lainata sen?
+3553419	3553418	gleiche_woerter	Saanko keksin?	Saisinko keksin?
+4181818	4181817	gleiche_woerter	Matkustaksä usein ulkomaille?	Matkustatko usein ulkomaille?
+4181824	4181821	gleiche_woerter	Matkustattekste usein ulkomaille?	Matkustatteko usein ulkomaille?
+4303912	4303914	gleiche_woerter	Me olemme jo syöneet.	Me ollaan jo syöty.
+4340670	4340669	gleiche_woerter	Lieneekö se totta.	Onkohan se totta.
+4366407	4366403	gleiche_woerter	Heitä pallo mulle.	Heitä pallo minulle.
+4391158	4391161	gleiche_woerter	Häiritsemmekö sinua?	Häiritääksme sua?
+4391162	4391160	gleiche_woerter	Häiritääksme teitä?	Häiritsemmekö teitä?
+5002449	5002446	gleiche_woerter	Mä rakastan mansikoit.	Minä rakastan mansikoita.
+5070873	5070872	gleiche_woerter	Se oli kauhee päivä.	Se oli kauhea päivä.
+5124365	5124366	gleiche_woerter	Kokeile sitä, Tomi.	Koklaa sitä, Tomi.
+5482838	5482837	gleiche_woerter	Alotetaaks nyt?	Aloitammeko nyt?
+5526397	5526399	gleiche_woerter	Kutsuinko minä sinut?	Kutsuinko minä sinua?
+6564108	6564111	gleiche_woerter	Oletko kasvissyöjä?	Ooksä kasvissyöjä?
+6572879	6572877	gleiche_woerter	Tarvitsen sakset.	Tarvitsen saksia.
+6584530	6584529	gleiche_woerter	Se on mun taskus.	Se on minun taskussani.
+6886764	6886763	gleiche_woerter	Meiän pitää suojella meiän lapsia.	Meidän pitää suojella lapsiamme.
+7459581	7459578	gleiche_woerter	Yritäk sä lahjoo mua?	Yritätkö sinä lahjoa minua?
+3830255	2841829	gleiche_woerter	Pysykää paikallanne!	Pysy paikallasi!
+4186328	4186326	gleiche_woerter	Haluaisitko keksejä?	Haluaisitko keksiä?
+4325004	4325003	gleiche_woerter	Hinnat on noussu.	Hinnat ovat nousseet.
+4434322	4434320	gleiche_woerter	Näitkö eiliset ilotulitukset?	Näitkö eilisen ilotulituksen?
+5280354	5280353	gleiche_woerter	Näytä sitä Tomille.	Näytä se Tomille.
+6114656	6114655	gleiche_woerter	Palataan hotellille.	Palataan hotelliin.
+6684472	6575543	gleiche_woerter	Synnyin laivalla.	Synnyin laivassa.
+6800162	6800161	gleiche_woerter	Tomi ei halua tehdä kompromisseja.	Tomi ei halua tehdä kompromissia.
+6865436	6865435	gleiche_woerter	Mun elämä on tylsää.	Minun elämäni on tylsää.
+6875903	6875902	gleiche_woerter	Tomi varasti mun sateenvarjon.	Tomi varasti minun sateenvarjoni.
+7093389	7093392	gleiche_woerter	Me olemme muuttuneet.	Me ollaan muututtu.
+4181800	4181797	gleiche_woerter	Mun tekee mieli kattoo telkkarii.	Mun tekee mieli kattoa telkkaria.
+4409351	4409350	gleiche_woerter	Tomi oli aivan raivoissaan Marille.	Tomi oli aivan raivona Marille.
+5397378	5397380	gleiche_woerter	Mä tarvitsen halin.	Mä tarviin halin.
+354158	1974115	nur_pronomen	Sinä olet ihminen.	Olet ihminen.
+3559817	354748	nur_pronomen	En minä tiedä.	En tiedä.
+3363564	888641	nur_pronomen	Minä tiedän.	Tiedän.
+7938062	1041158	nur_pronomen	Minä opiskelen.	Opiskelen.
+3340392	1180842	nur_pronomen	Minä puhun ruotsia.	Puhun ruotsia.
+3634972	1307053	nur_pronomen	Rakastatko sinä minua?	Rakastatko minua?
+1485695	3381800	nur_pronomen	Mikä tämä on?	Mikä se on?
+3781681	2570695	nur_pronomen	Haluan lukea sen kirjan.	Haluan lukea tämän kirjan.
+8192844	3140519	nur_pronomen	Minä juon maitoa.	Juon maitoa.
+3216815	7757059	nur_pronomen	Minä menen.	Menen.
+3393416	879632	nur_pronomen	Minä menen kauppaan.	Menen kauppaan.
+6695119	5451839	nur_pronomen	Mä asun yksin.	Asun yksin.
+6676996	6676995	nur_pronomen	Mä oon vanha.	Olen vanha.
+6677884	6677883	nur_pronomen	Mä juon paljon.	Juon paljon.
+6729935	6729933	nur_pronomen	Nukkuukse?	Nukkuuko hän?
+6731866	6731865	nur_pronomen	Mä en oo kotona.	En ole kotona.
+6974935	6974933	nur_pronomen	Mä syön lihaa.	Syön lihaa.
+7307712	7307711	nur_pronomen	Minä olen luova.	Olen luova.
+7347634	7347633	nur_pronomen	Syötkö sinä kalaa?	Syötkö kalaa?
+7347637	7347635	nur_pronomen	Syötkö sinä lihaa?	Syötkö lihaa?
+4638488	813103	nur_pronomen	Minä tarvitsen ystäviä.	Tarvitsen ystäviä.
+1962853	5312294	nur_pronomen	Minä haluan tanssia.	Haluan tanssia.
+3220582	6807730	nur_pronomen	Osaan lukea.	Mä osaan lukea.
+3276636	6690720	nur_pronomen	Kirjasi on tässä.	Sun kirja on tässä.
+3569367	3569363	nur_pronomen	Osaatko sinä uida?	Osaatko uida?
+6706580	3871053	nur_pronomen	Minä tiedän sen jo.	Tiedän sen jo.
+6991179	4144661	nur_pronomen	Mä haluun jäätelön.	Haluan jäätelön.
+4149788	4149787	nur_pronomen	Missä on mun kengät?	Missä ovat kenkäni?
+5523703	5523700	nur_pronomen	Minä kävelen töihin.	Kävelen töihin.
+5772984	5772983	nur_pronomen	Vastaa mun kysymykseen.	Vastaa kysymykseeni.
+6631508	6631507	nur_pronomen	Mä meen autol.	Menen autolla.
+6686636	6686637	nur_pronomen	Minä pidän talvesta.	Pidän talvesta.
+6896566	6896565	nur_pronomen	Minä en koskaan juo yksin.	En koskaan juo yksin.
+6952529	6952528	nur_pronomen	Minä istuin Tomin takana.	Istuin Tomin takana.
+7576525	7576524	nur_pronomen	Sinä et ole lihava.	Et ole lihava.
+7589748	7589747	nur_pronomen	Me ei tarvita sitä.	Emme tarvitse sitä.
+3374608	3374612	nur_pronomen	Mua väsyttää!	Väsyttää!
+3484393	3484392	nur_pronomen	Minä kadun sitä.	Kadun sitä.
+3569280	3569278	nur_pronomen	Me kävelimme paljon.	Kävelimme paljon.
+3871758	3871759	nur_pronomen	Tarvitsen kofeiinia.	Mä tarviin kofeiinii.
+4188766	4188765	nur_pronomen	Mun kengät kastui.	Kenkäni kastuivat.
+4359709	4359708	nur_pronomen	Sun lapset on ihania.	Lapsesi ovat ihania.
+6738399	4896903	nur_pronomen	Mä oon koditon.	Olen koditon.
+4958293	4958289	nur_pronomen	Sinä aliarvioit Tomin.	Aliarvioit Tomin.
+5001458	5001457	nur_pronomen	Mä ootan ulkona.	Odotan ulkona.
+5002576	5002575	nur_pronomen	Mä en lukenu sitä.	En lukenut sitä.
+5008790	5008793	nur_pronomen	Olen vähän ujo.	Mä oon vähän ujo.
+5013218	5013217	nur_pronomen	Meiän suunnitelma epäonnistu.	Suunnitelmamme epäonnistui.
+5195901	5195899	nur_pronomen	Mä ostan sulle uuden.	Ostan sinulle uuden.
+5228619	5228618	nur_pronomen	Mä en oo robotti.	En ole robotti.
+5312084	5312083	nur_pronomen	Minä lupasin.	Lupasin.
+5352307	5352306	nur_pronomen	Miksi sinä suostuit?	Miksi suostuit?
+5377561	5377560	nur_pronomen	Minä tein kaikkeni.	Tein kaikkeni.
+5423406	5423404	nur_pronomen	Ook sä sinkku?	Oletko sinkku?
+5489616	5489615	nur_pronomen	Söik sä mun keksit?	Söitko minun keksini?
+5552206	5552209	nur_pronomen	Minä tiedän totuuden.	Tiedän totuuden.
+5672839	5672836	nur_pronomen	Uhkailetko sinä minua?	Uhkailetko minua?
+6620049	6620048	nur_pronomen	Mä oon japanilainen.	Olen japanilainen.
+6692446	6692445	nur_pronomen	Mä heräsin ja näin varkaan mun huoneessa.	Heräsin ja näin varkaan huoneessani.
+6704258	6704257	nur_pronomen	Mä oon laiska.	Olen laiska.
+6704299	6704298	nur_pronomen	Mä oon laiha.	Olen laiha.
+6742564	6742563	nur_pronomen	Mä en laulanu.	En laulanut.
+6855065	6855063	nur_pronomen	Me seurustellaan.	Seurustelemme.
+6916107	6916105	nur_pronomen	Mä häpeän mun menneisyyttä.	Häpeän menneisyyttäni.
+6943895	6943893	nur_pronomen	Paranenko minä pian?	Paranenko pian?
+6944698	6944697	nur_pronomen	Minä tiesin sen.	Tiesin sen.
+7024255	7024254	nur_pronomen	Olitko sinä vihainen?	Olitko vihainen?
+7026891	7026890	nur_pronomen	Minä seurasin Tomia.	Seurasin Tomia.
+7072217	7072215	nur_pronomen	Minä näin viestin.	Näin viestin.
+7072218	7072215	nur_pronomen	Mä näin sen viestin.	Näin viestin.
+7080286	7080285	nur_pronomen	Sä et oo ruma.	Et ole ruma.
+7096048	7096047	nur_pronomen	Minä kaljuunnun.	Kaljuunnun.
+7181536	7181533	nur_pronomen	Me otamme riskin.	Otamme riskin.
+7249458	7249456	nur_pronomen	Saik sä mun viestin?	Saitko viestini?
+7485144	7485143	nur_pronomen	Olitko sinä sotilas?	Olitko sotilas?
+7559341	7559342	nur_pronomen	Talo tarjoaa tämän.	Talo tarjoaa.
+7576522	7576521	nur_pronomen	Minä en puhunut.	En puhunut.
+3464396	3464394	nur_pronomen	Minä halasin Tomia.	Halasin Tomia.
+4145269	4145270	nur_pronomen	Me tapasimme risteilyllä.	Tapasimme risteilyllä.
+4297908	4297907	nur_pronomen	Minä mietin asiaa.	Mietin asiaa.
+4966848	4966847	nur_pronomen	Sä näytät surulliselt.	Näytät surulliselta.
+5000756	5000755	nur_pronomen	Mä en oo ylpee siitä.	En ole ylpeä siitä.
+5000773	5000772	nur_pronomen	Minä myönnän virheeni.	Myönnän virheeni.
+5206288	5206287	nur_pronomen	Rakastik sä Tomia?	Rakastitko Tomia?
+5207574	5207573	nur_pronomen	Mä sain sun viestin.	Sain viestisi.
+5221662	5221660	nur_pronomen	Mä oisin voinu kuolla.	Olisin voinut kuolla.
+5236321	5236320	nur_pronomen	Mä toivon samaa.	Toivon samaa.
+5415969	5415968	nur_pronomen	Minä olen muuttunut.	Olen muuttunut.
+5425145	5425146	nur_pronomen	Ostin uuden auton.	Mä ostin uuden auton.
+5426311	5426310	nur_pronomen	Siksi minä valehtelin.	Siksi valehtelin.
+5671236	5671233	nur_pronomen	Sinä vastasit oikein.	Vastasit oikein.
+6879591	6879590	nur_pronomen	Mä lainaan sulle tän kirjan.	Lainaan sinulle tämän kirjan.
+6916650	6916649	nur_pronomen	Me ei tunnistettu toisiamme.	Emme tunnistaneet toisiamme.
+6930592	6930591	nur_pronomen	Miksi sinä valehtelit Tomille?	Miksi valehtelit Tomille?
+6944872	6944870	nur_pronomen	Minä matkustin ympäri Eurooppaa.	Matkustin ympäri Eurooppaa.
+6955759	6955757	nur_pronomen	Sä voit kertoo totuuden.	Voit kertoa totuuden.
+7578659	7578657	nur_pronomen	Äänestik sä Tomia?	Äänestitkö Tomia?
+4362968	4362966	nur_pronomen	Tom Jackson ei ollu sen oikee nimi.	Tom Jackson ei ollut hänen oikea nimensä.
+6930586	6930585	nur_pronomen	Minun täytyy myöntää, että se on todella houkuttelevaa.	Täytyy myöntää, että se on todella houkuttelevaa.
+6941755	6941752	nur_pronomen	Mä aioin kertoo siitä Tomille, mut mä unohdin.	Aioin kertoa siitä Tomille, mutta unohdin sen.
+6970662	6970669	nur_pronomen	Ostin tämän kirjan Bostonissa viime kuussa.	Mä ostin tän kirjan Bostonissa viime kuus.
