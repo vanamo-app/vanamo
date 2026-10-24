@@ -2357,7 +2357,7 @@ function yearFrame(dt) {
   while (driftAcc > 1) { driftAcc -= 1; stageFx.drift(1); }
 }
 
-let trans = null, moveIn = 0;   // moveIn 1: Übergang über Stufe 6 läuft, Eichhörnchen zieht danach ein
+let trans = null, moveIn = 0, holdMoveIn = false, moveInHeld = 0;   // moveIn 1: Übergang über Stufe 6 läuft, Eichhörnchen zieht danach ein
 const nowMs = () => window.__vt ?? performance.now();   // Testuhr für Prüf-Skripte
 // Übergang zur Zielstufe; mehrere Stufen auf einmal = ein einziger, etwas längerer Übergang
 function startTransition(target) {
@@ -2378,6 +2378,7 @@ function startMoveIn() {
   seqCam.x = -1.3; zoom.seq = zoom.seqNow = 1; seqPlayer.play();
 }
 function transFrame(now, dt) {
+  if (moveIn === 2 && now - moveInHeld > 30000) startMoveIn();   // Baumvogel: Sicherung, falls squirrelIn() ausbleibt
   const baseWind = reduceMotion ? 0 : 1;
   if (trans) {
     const e = now - trans.t0;
@@ -2393,7 +2394,7 @@ function transFrame(now, dt) {
     const k = trans.from === 0 ? 1 - Math.pow(1 - u, 2.2) : u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
     P = trans.from + (trans.target - trans.from) * k;
     if (!trans.fell && e > trans.start + trans.grow * 0.65) { trans.fell = true; stageFx.spawn(); }
-    if (e > trans.end) { P = trans.target; trans = null; leafUniforms.uGust.value = 0; tubeUniforms.uBend.value = 0; leafUniforms.uWind.value = baseWind; if (moveIn === 1) startMoveIn(); }
+    if (e > trans.end) { P = trans.target; trans = null; leafUniforms.uGust.value = 0; tubeUniforms.uBend.value = 0; leafUniforms.uWind.value = baseWind; if (moveIn === 1) { if (holdMoveIn) { moveIn = 2; moveInHeld = now; } else startMoveIn(); } }
   }
   // Testuhr: Zeitschritt aus der Uhr selbst (Screenshots erzeugen Zusatzbilder)
   const dtv = window.__vt != null ? Math.max(0, (now - (transFrame.last ?? now)) / 1000) : dt;
@@ -3168,7 +3169,9 @@ const __api = {
   /** Stufe direkt setzen (ohne Übergang) */
   setStage(n) { anim = null; trans = null; moveIn = 0; P = n; visitFx.stop(); },
   /** zur Stufe n wachsen – mit Windstoß und fallenden Blättern (mehrere Stufen = ein längerer Übergang) */
-  grow(n) { startTransition(n); },
+  grow(n, o = {}) { holdMoveIn = !!o.holdMoveIn; startTransition(n); },
+  /** Einzug des Eichhörnchens, der auf den Baumvogel wartet (grow(n, { holdMoveIn: true })), jetzt starten */
+  squirrelIn() { if (moveIn === 2) startMoveIn(); else holdMoveIn = false; },
   get stage() { return P; },
   /** Tag im Vanamo-Jahr (0–112) */
   setDay(d) { yearDay = d; applyYear(d); },

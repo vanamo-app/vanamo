@@ -31,7 +31,14 @@
 // Besuch (ab Stufe 1): Der Eichelhäher kommt ab und zu vorbei (bei etwa jedem dritten Besuch auf „Willkommen“,
 // frühestens 8–20 s nach dem Laden, höchstens einmal pro Besuch), landet, versteckt eine Eichel und fliegt weiter.
 // Nur tagsüber, nicht bei „Weniger Bewegung“ und nicht, während der Baum wächst oder die Seite gescrollt ist.
+//
+// Baumvögel (Nutzer 24.10.): Mit jeder Stufe wird ein Vogel frei (avatars.mjs: stage) und sofort zum Avatar. Kurz vor
+// dem Ende des Wachsens fliegt er aus der Krone in den Konto-Kreis, danach steht sein Name statt der Begrüßung da
+// (bird-unlock.mjs). Gezählt wird im Konto: tree.<Sprache>.birds = Zahl der freien Baumvögel. Bäume von vor dieser
+// Funktion: die Vögel bis zur aktuellen Stufe sind still frei. Ist ein Vogel ausgeblieben (gewachsen, aber „Willkommen“
+// danach nicht mehr gesehen), kommt er beim nächsten Besuch. Stufe 6: erst der Vogel, dann zieht das Eichhörnchen ein.
 import {REVIEW_KINDS} from './review-plan.mjs?v=2';
+import {treeBird,avatarArt} from './avatars.mjs?v=6';
 
 // Wachstum über den Kurs (Nutzer 23.10.): voll ausgewachsen am Ende von Level 3, anfangs schnell, dann immer langsamer.
 // Die Stufen sind Anteile am Kurs der Sprache (Sätze in Level 1–3), damit sie auch für andere Sprachen passen;
@@ -113,6 +120,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  const phone=matchMedia('(max-width:700px)'),reduce=matchMedia('(prefers-reduced-motion: reduce)');
  const coarse=matchMedia('(pointer: coarse)').matches;
  let baum=null,state=treeStage(learnedCount(getReviews())),visible=false,glassP=0,shown=false,pendingGrow=false,scrolling=false,scrollTimer=0;
+ let birdBusy=false,birdQueued=0,birdOkSince=0,birdsReady=false;   // Baumvögel (siehe unten)
  // Start mit dem Eichelhäher: nur für einen neuen Baum (im Konto weder gesehen noch gepflanzt). Ein Baum, der schon in
  // diesem Browser stand, gilt als gepflanzt – außer er steht noch ganz am Anfang (Stufe 0).
  const acct0=accountTree();
@@ -363,9 +371,11 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
    '<div class="baum-test-row" data-row="stage"><span class="baum-test-k">Stufe</span>'+Array.from({length:11},(_,i)=>`<button type="button" data-stage="${i}">${i}</button>`).join('')+'</div>'+
    '<div class="baum-test-row" data-row="season"><span class="baum-test-k">Jahreszeit</span>'+SEASONS.map(s=>`<button type="button" data-season="${s}">${SEASON_NAMES[s]}</button>`).join('')+'</div>'+
    '<div class="baum-test-row"><span class="baum-test-k">Tag</span><input type="range" min="0" max="111" step="1" aria-label="Tag im Vanamo-Jahr"><output></output></div>'+
-   '<div class="baum-test-row baum-test-actions"><button type="button" data-act="grow">Nächste Stufe wachsen ▸</button><button type="button" data-act="jay">Eichelhäher (Stufe 0)</button><button type="button" data-act="visit">Häher-Besuch</button><button type="button" data-act="squirrel">Eichhörnchen-Ausflug (Winter)</button><button type="button" data-act="mine">Mein Baum</button></div>';
+   '<div class="baum-test-row baum-test-actions"><button type="button" data-act="grow">Nächste Stufe wachsen ▸</button><button type="button" data-act="bird">Vogel dieser Stufe</button><button type="button" data-act="jay">Eichelhäher (Stufe 0)</button><button type="button" data-act="visit">Häher-Besuch</button><button type="button" data-act="squirrel">Eichhörnchen-Ausflug (Winter)</button><button type="button" data-act="mine">Mein Baum</button></div>';
   prog.after(el);
   const range=el.querySelector('input'),out=el.querySelector('output');
+  // Baumvogel: Krone, Begrüßung und Konto-Kreis müssen zu sehen sein – erst nach oben scrollen
+  const toTop=fn=>{if(scrollY<4){fn();return;}scrollTo({top:0,behavior:'instant'});setTimeout(fn,120);};
   const shownStage=()=>Math.round(baum.stage);
   function paint(){
    const st=shownStage(),d=testShown?.day??day;
@@ -385,11 +395,12 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
    const b=e.target.closest('button');if(!b)return;
    if(b.dataset.stage!=null)set({stage:+b.dataset.stage});
    else if(b.dataset.season)set({day:SEASON_MID[b.dataset.season]});
-   else if(b.dataset.act==='grow'){const n=Math.min(10,shownStage()+1);set({});baum.grow(n);setTimeout(paint,400);setTimeout(paint,9000);}
+   else if(b.dataset.act==='grow'){const n=Math.min(10,shownStage()+1);set({});if(birdBusy)return;toTop(()=>{growWithBird(n,{test:true});setTimeout(paint,400);setTimeout(paint,9000);});}   // mit Baumvogel (nur Anzeige)
+   else if(b.dataset.act==='bird'){const n=shownStage();if(n<1||birdBusy)return;set({});toTop(()=>playBird(n,{test:true}));}
    else if(b.dataset.act==='jay'){set({stage:0});baum.jay();}
    else if(b.dataset.act==='squirrel'){set({stage:Math.max(6,shownStage()),day:SEASON_MID.winter});setTimeout(()=>baum.winterTrip?.(),300);}
    else if(b.dataset.act==='visit'){if(shownStage()<1)set({stage:1});else set({});setTimeout(()=>baum.visit(),50);}
-   else if(b.dataset.act==='mine'){testOn=false;testShown=null;baum.setDay(day);baum.setStage(state.stage);paintProgress();paint();run();}
+   else if(b.dataset.act==='mine'){testOn=false;testShown=null;baum.setDay(day);baum.setStage(state.stage);paintProgress();paint();run();restoreAvatar();}
   });
   range.addEventListener('input',()=>set({day:+range.value}));
   paint();
@@ -403,7 +414,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   startCheck(go);
   if(start!=='done')return;   // erst die Eichel, dann wachsen
   // Gewachsen, während „Willkommen“ nicht zu sehen war: den Übergang zeigen, sobald der Baum wieder da ist.
-  if(go&&pendingGrow){pendingGrow=false;if(reduce.matches)baum.setStage(state.stage);else baum.grow(state.stage);takeFoto(7000);}
+  if(go&&pendingGrow){pendingGrow=false;growWithBird(state.stage);takeFoto(7000);}
  }
  // ---- Start: der Eichelhäher bringt die Eichel (siehe oben)
  function startOk(go){return go&&shown&&!viewOpen&&!testOn&&glassP===0&&scrollY<4;}
@@ -424,7 +435,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   start='done';clearTimeout(startTimer);
   if(!flown)baum.seed(true);   // „Weniger Bewegung“: Eichel liegt ohne Flug (nach dem Flug fliegt der Häher noch weg)
   const now=Date.now();plantedNow=0;writeLocalPlanted(now);plantedSent=true;
-  saveAccountTree({planted:new Date(now).toISOString(),start:new Date(now).toISOString()});
+  saveAccountTree({planted:new Date(now).toISOString(),start:new Date(now).toISOString(),birds:0});   // neuer Baum: noch kein Baumvogel
   paintProgress();
   if(state.stage>0){pendingGrow=true;setTimeout(run,700);}   // aus der Gastzeit schon Sätze gelernt: gleich wachsen
   else takeFoto(1500);
@@ -435,12 +446,71 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  function planVisit(){visitAt=Math.random()<VISIT_CHANCE?Date.now()+8000+Math.random()*12000:-1;}
  setInterval(()=>{
   if(!baum||visitAt<=0||start!=='done'||state.stage<1)return;
-  const ok=baum.running&&!document.hidden&&onWelcome()&&glassP<.2&&!testOn&&!reduce.matches&&html.dataset.themeMode!=='dark'&&!baum.busy;
+  const ok=baum.running&&!document.hidden&&onWelcome()&&glassP<.2&&!testOn&&!reduce.matches&&html.dataset.themeMode!=='dark'&&!baum.busy&&!birdBusy&&!birdQueued;
   if(!ok){visitOkSince=0;return;}
   if(!visitOkSince)visitOkSince=Date.now();
   if(Date.now()<visitAt||Date.now()-visitOkSince<VISIT_OK)return;
   if(baum.visit())visitAt=-1;
  },1000);
+ // ---- Baumvögel (siehe oben)
+ const BIRDS_KEY='vanamo-baum-voegel';   // in diesem Browser schon gezeigt (falls das Speichern im Konto nicht klappte)
+ const accountBirds=()=>{const n=Number(accountTree().birds);return Number.isFinite(n)?Math.max(0,Math.min(10,Math.floor(n))):null;};
+ const localBirds=()=>{try{return Math.max(0,Math.min(10,parseInt(localStorage.getItem(BIRDS_KEY)||'0',10)||0));}catch{return 0;}};
+ const shownBirds=()=>Math.max(accountBirds()??0,localBirds());
+ // Konto: Zahl der freien Baumvögel (nie kleiner werdend) und, nach einem Freischalt-Moment, der neue Vogel als Avatar
+ function saveBirds(n,avatar){
+  try{if(n>localBirds())localStorage.setItem(BIRDS_KEY,String(n));}catch{}
+  const all=accountUser()?.user_metadata?.tree,cur=all&&typeof all==='object'?all:{};
+  const birds=Math.max(n,Number(cur[TREE_LANG]?.birds)||0);
+  const tree={...cur,[TREE_LANG]:{...(cur[TREE_LANG]||{}),birds}};
+  return Promise.resolve(window.suomiAccountData?.(avatar?{tree,avatar}:{tree})).catch(err=>console.warn('Baum: Konto',err));
+ }
+ const header=()=>document.getElementById('account-button');
+ const greeting=()=>document.querySelector('#home-view .intro h1');
+ const birdOk=()=>!!baum&&shown&&!document.hidden&&onWelcome()&&glassP<.2&&scrollY<40&&!viewOpen&&start==='done';
+ // Wachsen; kommt dabei ein neuer Vogel, fliegt er kurz vor dem Ende des Übergangs los (bei Stufe 6 wartet das Eichhörnchen)
+ function growWithBird(target,{test=false}={}){
+  const from=Math.round(baum.stage),n=target-from;
+  const bird=(test||target>shownBirds())&&target>from?treeBird(target):null;
+  if(reduce.matches)baum.setStage(target);else baum.grow(target,{holdMoveIn:!!bird});
+  if(!bird)return;
+  if(!test&&target>1&&shownBirds()<target-1)saveBirds(target-1);   // mehrere Stufen auf einmal: die übersprungenen Vögel still
+  const release=reduce.matches?400:800+(from===0?5200:3000)+1000*Math.min(3,n-1)+250;   // Wachsen endet bei start + grow (baum.mjs)
+  birdBusy=true;
+  setTimeout(()=>{birdBusy=false;if(birdOk())playBird(target,{test});else{birdQueued=target;baum.squirrelIn?.();}},release);
+ }
+ async function playBird(stage,{test=false}={}){
+  const bird=treeBird(stage);
+  if(birdBusy||!bird){baum?.squirrelIn?.();return;}
+  birdBusy=true;birdQueued=0;
+  try{
+   const {playBirdUnlock}=await import('./bird-unlock.mjs?v=1');
+   await playBirdUnlock({baum,stageEl,bird,button:header(),greeting:greeting(),reduceMotion:reduce.matches,
+    onLanded:()=>{if(!test)saveBirds(stage,bird.id);}});   // Test: nur Anzeige
+  }catch(err){console.warn('Baumvogel',err);}
+  finally{birdBusy=false;baum?.squirrelIn?.();}
+ }
+ // Beim Laden: Bäume von vor dieser Funktion bekommen ihre Vögel still; ein ausgebliebener Vogel kommt, sobald der Baum zu sehen ist.
+ // Erst wenn die Kontodaten frisch sind (ein anderes Gerät kann den Vogel schon gezeigt haben).
+ async function initBirds(){
+  await Promise.race([window.suomiAccountFresh||Promise.resolve(),new Promise(r=>setTimeout(r,10000))]);
+  if(start!=='done'||!accountUser())return;
+  const acc=accountBirds(),loc=localBirds();
+  if(acc==null)saveBirds(state.stage);                                // noch nie gezählt: alles bis jetzt ist still frei
+  else if(loc>acc)saveBirds(Math.min(loc,state.stage));               // hier gezeigt, aber im Konto nicht angekommen
+  else if(acc<state.stage&&!pendingGrow)birdQueued=state.stage;       // ausgeblieben: kommt gleich
+  birdsReady=true;
+ }
+ setInterval(()=>{
+  if(!birdsReady||!birdQueued||birdBusy||testOn||!baum)return;
+  if(!birdOk()||baum.busy){birdOkSince=0;return;}
+  if(!birdOkSince)birdOkSince=Date.now();
+  if(Date.now()-birdOkSince>=1200)playBird(birdQueued);
+ },400);
+ function restoreAvatar(){   // nach dem Test: wieder der eigene Vogel im Kreis
+  const b=header(),id=accountUser()?.user_metadata?.avatar;if(!b||b.dataset.unlocking)return;
+  if(id&&avatarArt(id)){b.innerHTML=avatarArt(id);b.dataset.bird=id;b.classList.add('has-bird');}
+ }
  const io=new IntersectionObserver(entries=>{for(const e of entries)visible=e.isIntersecting;run();},{threshold:0});
  io.observe(box);
  document.addEventListener('visibilitychange',run);
@@ -466,7 +536,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  // ---- Baum laden
  async function load(){
   await waitIntro;
-  const {createBaum}=await import('./baum/baum.mjs?v=16');
+  const {createBaum}=await import('./baum/baum.mjs?v=17');
   baum=createBaum(stageEl,{page:true,paused:true,stage:start==='done'?state.stage:0,seed:start==='done',day,
    frameY:.34,zoom:.86,maxDpr:coarse?1.5:2,reduceMotion:reduce.matches});
   await baum.ready;
@@ -481,6 +551,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   takeFoto();
   mountTest();
   planVisit();
+  initBirds();
   // Farbschema gewechselt: neues Foto (der Hintergrund ist im Foto mit drin; Tag/Nacht blendet ~1,2 s über)
   new MutationObserver(()=>takeFoto(2000)).observe(html,{attributes:true,attributeFilter:['data-theme']});
  }

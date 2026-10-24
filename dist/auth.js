@@ -4,7 +4,7 @@ import {mergeEndingsProgress} from './endings-progress.mjs?v=1';
 import {mergePerformanceEvents} from './learning-insights.mjs';
 import {mergeGames} from './games-progress.mjs';
 import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,TURNSTILE_SITE_KEY} from './supabase-config.js?v=2';
-import {accountProfile,avatarSVG,avatarPickerMarkup,bindAvatarPicker,cleanNickname,isAvatar,randomAvatar,NICKNAME_MAX} from './avatars.mjs?v=5';
+import {accountProfile,avatarSVG,avatarPickerMarkup,bindAvatarPicker,cleanNickname,isAvatar,isUnlocked,randomAvatar,NICKNAME_MAX} from './avatars.mjs?v=6';
 
 const STORE='suomi-learning-v1';
 const SESSION='suomi-auth-session-v1';
@@ -210,9 +210,13 @@ function renderAccount(){
   const button=$('account-button');
   if(button){
     button.classList.toggle('is-avatar',logged);
-    button.classList.toggle('has-bird',logged&&!!profile.avatar);
-    if(logged&&profile.avatar)button.innerHTML=avatarSVG(profile.avatar);
-    else button.textContent=logged?(Array.from(profile.nickname)[0]||'?').toUpperCase():'Anmelden / Registrieren';
+    // Während ein neuer Baumvogel einfliegt (bird-unlock.mjs, data-unlocking), bleibt der Inhalt unangetastet.
+    // Derselbe Vogel wird nicht neu eingesetzt (sonst fehlt das Bild kurz und das Hüpfen bricht ab).
+    if(!button.dataset.unlocking){
+      button.classList.toggle('has-bird',logged&&!!profile.avatar);
+      if(logged&&profile.avatar){if(button.dataset.bird!==profile.avatar||!button.querySelector('.avatar-art img')){button.innerHTML=avatarSVG(profile.avatar);button.dataset.bird=profile.avatar;}}
+      else{button.textContent=logged?(Array.from(profile.nickname)[0]||'?').toUpperCase():'Anmelden / Registrieren';delete button.dataset.bird;}
+    }
     if(logged){button.setAttribute('aria-label','Konto');button.setAttribute('aria-haspopup','true');}
     else for(const attr of ['aria-label','aria-haspopup','aria-expanded'])button.removeAttribute(attr);
     setAccountMenu(false);
@@ -363,6 +367,7 @@ function renderDialogSections(){
 }
 function fillProfileForm(){
   const profile=accountProfile(session?.user);
+  profilePicker?.lock(id=>isUnlocked(id,session?.user));   // Baumvögel erst ab ihrer Stufe
   profilePicker?.set(profile.avatar);
   if($('profile-nickname'))$('profile-nickname').value=profile.nickname;
 }
@@ -479,6 +484,7 @@ async function changePassword(currentPassword,newPassword){
 }
 function startOnboarding(){
   accountStage='onboarding';
+  onboardingPicker?.lock(id=>isUnlocked(id,null));   // neues Konto: nur die Startvögel, die Baumvögel kommen mit dem Baum
   onboardingPicker?.set(randomAvatar());
   const input=$('onboarding-nickname');input.value='';input.placeholder=accountProfile(session?.user).username;
   $('onboarding-email').value='';$('onboarding-adult').checked=false;$('onboarding-adult-row').hidden=true;
@@ -612,9 +618,12 @@ window.suomiAccountData=async data=>{
   if(!r.ok||!user?.id||!session)throw new Error('Kontodaten konnten nicht gespeichert werden.');
   saveSession({...session,user});return user;
 };
-import('./classrooms.js?v=110').catch(()=>{});
+import('./classrooms.js?v=111').catch(()=>{});
 import('./quality-review.js?v=8').catch(()=>{});
-if(session?.user&&configured())refreshSession().then(async ok=>{if(!ok)return;try{await pullAndMerge();}catch(err){syncState('Synchronisierung fehlgeschlagen. Bitte erneut versuchen.',true);status(err.message,true);}}).catch(syncError).finally(()=>{syncReady=true;if(syncQueued)scheduleSync();scheduleEmailHint();});
-else syncReady=true;
+// suomiAccountFresh: erfüllt, sobald die Kontodaten frisch vom Server da sind (oder es nichts zu holen gibt) –
+// z. B. für den Baum: ob ein neuer Vogel schon auf einem anderen Gerät gezeigt wurde.
+let accountFresh;window.suomiAccountFresh=new Promise(resolve=>{accountFresh=resolve;});
+if(session?.user&&configured())refreshSession().then(async ok=>{if(!ok)return;try{await pullAndMerge();}catch(err){syncState('Synchronisierung fehlgeschlagen. Bitte erneut versuchen.',true);status(err.message,true);}}).catch(syncError).finally(()=>{syncReady=true;accountFresh();if(syncQueued)scheduleSync();scheduleEmailHint();});
+else{syncReady=true;accountFresh();}
 // Auch nach einer Übungsrunde prüfen – die Serie kann gerade erst drei Tage erreicht haben.
 window.addEventListener('suomi-learning-changed',()=>scheduleEmailHint());
