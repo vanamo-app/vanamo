@@ -6,10 +6,19 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {chromium} from 'playwright';
-import {AVATARS,accountProfile,cleanNickname,avatarMarkup} from './dist/avatars.mjs';
+import {AVATARS,accountProfile,cleanNickname,avatarMarkup,isUnlocked,birdsUnlocked,randomAvatar,treeBird} from './dist/avatars.mjs';
 
 // Bausteine ohne Browser
 assert.equal(AVATARS.length,16);assert.equal(new Set(AVATARS.map(a=>a.id)).size,16);
+// Baumvögel: 6 Startvögel frei, je Baumstufe 1–10 einer (Zahl der freien steht im Konto: tree.fi.birds)
+assert.equal(AVATARS.filter(a=>!a.stage).length,6);assert.deepEqual(AVATARS.filter(a=>a.stage).map(a=>a.stage),[1,2,3,4,5,6,7,8,9,10]);
+assert.ok(AVATARS.filter(a=>a.stage).every(a=>/^#[0-9a-f]{6}$/i.test(a.col)),'jeder Baumvogel hat eine Hauptfarbe');
+assert.equal(treeBird(3).id,'tilhi');assert.equal(treeBird(11),null);
+for(let i=0;i<30;i++){const r=randomAvatar();assert.equal(AVATARS.find(a=>a.id===r).stage,0,'Zufallsvogel ist ein Startvogel');}
+assert.equal(birdsUnlocked({user_metadata:{tree:{fi:{birds:3}}}}),3);assert.equal(birdsUnlocked({user_metadata:{tree:{fi:{birds:'x'}}}}),0);assert.equal(birdsUnlocked(null),0);
+assert.equal(isUnlocked('peippo',null),true);assert.equal(isUnlocked('tilhi',null),false);
+assert.equal(isUnlocked('tilhi',{user_metadata:{tree:{fi:{birds:3}}}}),true);assert.equal(isUnlocked('tuulihaukka',{user_metadata:{tree:{fi:{birds:3}}}}),false);
+assert.equal(isUnlocked('kurki',{user_metadata:{avatar:'kurki'}}),true,'ein schon gewählter Vogel bleibt wählbar');
 // Die Datenbank (Klassenraum) kennt genau dieselben Vögel – neueste Migration mit classroom_private.avatar.
 {const fs=await import('node:fs');const dir='supabase/migrations';const sql=fs.readdirSync(dir).sort().map(f=>fs.readFileSync(`${dir}/${f}`,'utf8')).filter(t=>/function classroom_private\.avatar\(/.test(t)).at(-1);const ids=[...sql.match(/avatar' in \(([^)]*)\)/)[1].matchAll(/'([^']+)'/g)].map(m=>m[1]);assert.deepEqual(ids.sort(),AVATARS.map(a=>a.id).sort(),'database lists the same birds');}
 assert.deepEqual(accountProfile({user_metadata:{username:'lumi',nickname:'  Lumi   die <b>Erste</b> ',avatar:'kurki'}}),{username:'lumi',nickname:'Lumi die <b>Erste</b>',avatar:'kurki'});
@@ -87,6 +96,14 @@ try{
  assert.equal(await page.locator('#recovery-result').isVisible(),false,'der Code kommt erst nach Schritt 2');
  assert.equal(await page.locator('[data-avatar-choice]:visible').count(),16);
  assert.equal(await page.locator('#account-onboarding [data-avatar-choice][aria-pressed="true"]').count(),1,'ein Vogel ist vorausgewählt');
+ // Neues Konto: nur die 6 Startvögel sind frei, die 10 Baumvögel als Silhouette mit Stufenzahl
+ assert.equal(await page.locator('#account-onboarding .avatar-choice.is-locked').count(),10);
+ assert.equal(await page.locator('#account-onboarding .avatar-choice.is-locked[aria-pressed="true"]').count(),0,'vorausgewählt ist ein Startvogel');
+ assert.equal(await page.locator('#account-onboarding [data-avatar-choice="kurki"] .avatar-stage').textContent(),'8');
+ assert.equal(await page.locator('#account-onboarding [data-avatar-choice="kurki"]').getAttribute('aria-label'),'Kranich · ab Baumstufe 8');
+ await page.locator('#account-onboarding [data-avatar-choice="kurki"]').dispatchEvent('click');
+ assert.equal(await page.locator('#account-onboarding [data-avatar-choice="kurki"]').getAttribute('aria-pressed'),'false','gesperrt: nicht wählbar');
+ assert.equal(await page.locator('#onboarding-avatar-name em').textContent(),'ab Baumstufe 8','… aber man sieht, wann er kommt');
  assert.equal(await page.locator('#onboarding-nickname').getAttribute('placeholder'),'neuer.nutzer');
  await page.click('#account-onboarding [data-avatar-choice="sinitiainen"]');
  assert.equal(await page.locator('#onboarding-avatar-name strong').textContent(),'Sinitiainen');
@@ -156,13 +173,21 @@ try{
  assert.deepEqual(s.passwordCalls.at(-1),{currentPassword:'ein-langes-passwort-123',newPassword:'noch-ein-neues-passwort'});
  assert.equal(await page.locator('#password-current').inputValue(),'');assert.equal(await page.evaluate(()=>document.body.dataset.account),'authenticated');
  await shot(page,'passwort-aendern');
- await page.click('#profile-form [data-avatar-choice="kurki"]');await page.fill('#profile-nickname','Lumikki');
+ // Baumvögel bis Stufe 3 frei (wie nach dem Freischalten am Baum): Seidenschwanz wählbar, Turmfalke noch nicht
+ assert.equal(await page.locator('#profile-form .avatar-choice.is-locked').count(),10);
+ await page.click('#close-account');
+ await page.evaluate(()=>window.suomiAccountData({tree:{fi:{birds:3}}}));
+ await page.click('#account-button');await page.click('#account-manage');await page.waitForSelector('#profile-form:visible');
+ assert.equal(await page.locator('#profile-form .avatar-choice.is-locked').count(),7);
+ assert.equal(await page.locator('#profile-form [data-avatar-choice="tilhi"]').getAttribute('aria-disabled'),null);
+ assert.equal(await page.locator('#profile-form [data-avatar-choice="tuulihaukka"]').getAttribute('aria-disabled'),'true');
+ await page.click('#profile-form [data-avatar-choice="tilhi"]');await page.fill('#profile-nickname','Lumikki');
  await page.click('#profile-save');
  await page.waitForFunction(()=>document.getElementById('account-status').textContent==='Gespeichert.');
  assert.equal(await page.evaluate(()=>document.getElementById('profile-form').nextElementSibling.id),'account-status','Meldung steht direkt unter dem Formular');
- assert.deepEqual(s.userUpdates.at(-1),{data:{nickname:'Lumikki',avatar:'kurki'}});
+ assert.deepEqual(s.userUpdates.at(-1),{data:{nickname:'Lumikki',avatar:'tilhi'}});
  await page.click('#close-account');
- assert.match(await page.locator('#account-button .avatar-art img').getAttribute('src'),/\/avatars\/kurki\.webp/,'Icon zeigt jetzt den Kranich');
+ assert.match(await page.locator('#account-button .avatar-art img').getAttribute('src'),/\/avatars\/tilhi\.webp/,'Icon zeigt jetzt den Seidenschwanz');
  await page.waitForFunction(()=>/Lumikki/.test(document.querySelector('#home-view .intro h1')?.textContent||''));
  assert.deepEqual(s.errors,[]);
  await s.context.close();
@@ -177,7 +202,7 @@ try{
  await page.waitForSelector('#recovery-result:not([hidden])');
  assert.equal(await page.evaluate(()=>document.getElementById('account-dialog').open),true);
  assert.equal(s.userUpdates.length,1);assert.equal(s.userUpdates[0].data.nickname,'neuer.nutzer');
- assert.ok(AVATARS.some(a=>a.id===s.userUpdates[0].data.avatar),'zufälliger Vogel beim Überspringen');
+ assert.ok(AVATARS.some(a=>a.id===s.userUpdates[0].data.avatar&&!a.stage),'zufälliger Startvogel beim Überspringen');
  await shot(page,'reg-3-code-handy');
  assert.deepEqual(s.errors,[]);
  await s.context.close();

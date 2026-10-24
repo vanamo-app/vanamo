@@ -1810,3 +1810,44 @@ html.tree-view-open,html.tree-view-open body{overflow:hidden}
 .baum-test output{min-width:96px;color:var(--ink)}
 .baum-test-actions{padding-left:79px}
 @media(max-width:700px){.baum-test{margin:-6px 12px 22px}.baum-test-k{min-width:100%}.baum-test-actions{padding-left:0}}
+
+/* Baumvögel (Nutzer 24.10.): gesperrte Vögel in der Vogelauswahl – flache Silhouette in der Hauptfarbe, kleine Stufenzahl (avatars.mjs) */
+.avatar-picker .avatar-lock,.avatar-picker .avatar-stage{display:none}
+.avatar-picker .avatar-choice.is-locked{cursor:default}
+.avatar-picker .avatar-choice.is-locked:hover{border-color:transparent}
+.avatar-picker .avatar-choice.is-locked .avatar{position:relative}
+.avatar-picker .avatar-choice.is-locked .avatar-art{background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+:root[data-theme=kaamos] .avatar-picker .avatar-choice.is-locked .avatar-art{background:color-mix(in srgb,var(--ink) 10%,var(--paper))}
+.avatar-picker .avatar-choice.is-locked .avatar-art img{visibility:hidden}
+.avatar-picker .avatar-choice.is-locked .avatar-lock{display:block;position:absolute;inset:0;filter:drop-shadow(0 0 .7px color-mix(in srgb,var(--ink) 55%,transparent))}
+.avatar-picker .avatar-lock::before{content:"";position:absolute;inset:0;background:var(--sil);-webkit-mask:var(--img) center/contain no-repeat;mask:var(--img) center/contain no-repeat;opacity:.92}
+:root[data-theme=kaamos] .avatar-picker .avatar-lock::before{opacity:.72}
+.avatar-picker .avatar-choice.is-locked .avatar-stage{display:block;position:absolute;right:-3px;bottom:-3px;z-index:1;width:19px;height:19px;border-radius:50%;background:var(--paper);border:1.5px solid color-mix(in srgb,var(--ink) 45%,transparent);font:700 10px/16px 'DM Sans',sans-serif;color:var(--ink-soft);text-align:center;font-variant-numeric:tabular-nums;transition:opacity .15s ease;pointer-events:none}
+.avatar-picker .avatar-choice.is-zoom .avatar-stage{opacity:0}
+@media(hover:hover) and (pointer:fine){.avatar-picker .avatar-choice:hover .avatar-stage{opacity:0}}
+.avatar-picker-name em{font-style:normal;color:var(--muted)}
+.avatar-picker-name em:not(:empty)::before{content:" · "}
+
+/* Baumvögel: ein neuer Vogel fliegt aus der Krone in den Konto-Kreis (bird-unlock.mjs) */
+.unlock-canvas{position:fixed;inset:0;z-index:1000;pointer-events:none}
+/* Konto-Kreis: wie die Logo-Kachel im Intro (.brand-mark.is-filling) */
+#account-button .unlock-bg{position:absolute;inset:0;clip-path:circle(0% at 50% 50%);transition:clip-path .5s cubic-bezier(.2,.7,.2,1)}
+#account-button.unlock-filled .unlock-bg{clip-path:circle(80% at 50% 50%)}
+#account-button .unlock-bird{position:absolute;inset:0;opacity:0;transform:scale(.3) rotate(-25deg);transform-origin:50% 70%;transition:transform .55s cubic-bezier(.3,1.6,.5,1),opacity .2s}
+#account-button.unlock-filled .unlock-bird{opacity:1;transform:none}
+#account-button .unlock-sil{position:absolute;inset:0;background:var(--sil);-webkit-mask:var(--img) center/contain no-repeat;mask:var(--img) center/contain no-repeat}
+#account-button .unlock-img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;opacity:0}
+/* Name statt Begrüßung: Buchstaben erscheinen wie im Intro, dann der orange Strich, dann die Übersetzung */
+.unlock-name{position:absolute;z-index:30;display:grid;justify-items:center;gap:9px;pointer-events:none;transform:translateX(-50%);text-align:center;white-space:nowrap}
+.unlock-name-fi{font:600 34px/1.05 var(--heading);letter-spacing:-.4px;color:var(--ink)}
+.unlock-name-fi span{display:inline-block;opacity:0;transform:translateY(.22em);filter:blur(5px)}
+.unlock-name.in .unlock-name-fi span{opacity:1;transform:none;filter:blur(0);transition:opacity .45s ease calc(var(--i)*55ms),transform .6s cubic-bezier(.2,.7,.2,1) calc(var(--i)*55ms),filter .45s ease calc(var(--i)*55ms)}
+.unlock-name-line{width:30px;height:2px;border-radius:2px;background:var(--orange);transform:scaleX(0);transition:transform .45s cubic-bezier(.2,.7,.2,1) var(--line-delay,600ms)}
+.unlock-name.in .unlock-name-line{transform:scaleX(1)}
+.unlock-name-de{font:600 12px/1.4 'DM Sans',sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);opacity:0;transform:translateY(6px);transition:opacity .5s ease var(--de-delay,800ms),transform .55s cubic-bezier(.2,.7,.2,1) var(--de-delay,800ms)}
+.unlock-name.in .unlock-name-de{opacity:1;transform:none}
+.unlock-name.out{opacity:0;transform:translate(-50%,-10px);filter:blur(4px);transition:opacity .75s ease,transform .75s ease,filter .75s ease}
+.unlock-name.is-calm .unlock-name-fi span,.unlock-name.is-calm .unlock-name-de,.unlock-name.is-calm .unlock-name-line{transform:none;filter:none}
+.unlock-name.is-calm.in .unlock-name-fi span{transition:opacity .4s ease}
+.unlock-name.is-calm.out{transform:translateX(-50%);filter:none}
+@media(max-width:700px){.unlock-name-fi{font-size:27px}.unlock-name{gap:7px}}
