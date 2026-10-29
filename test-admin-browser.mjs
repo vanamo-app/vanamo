@@ -10,7 +10,7 @@ const month=k=>{const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()
 const week=k=>{const d=new Date();d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7)-7*k);return d.toISOString().slice(0,10);};
 const overview={min_group:5,
  accounts:{total:214,new7:12,with_email:133,weekly:Array.from({length:12},(_,i)=>({week:week(11-i),n:[3,5,2,7,6,9,8,11,7,14,13,12][i]}))},
- activity:{today:31,d7:86,d30:120,practiced_today:1940,practiced_7:9000,practiced_prev7:8300,streak_avg:4.2,streak_users:40,cards_total:52000},
+ activity:{today:31,d7:86,d30:120,practiced_today:1940,practiced_7:9000,practiced_prev7:8300,learning_days_avg:4.2,learning_days_users:40,cards_total:52000},
  classrooms:{rooms:9,members:74},swarm:{names:17,contributors:2},
  money:{months:[{month:month(2),gross:3,fees:.4,payments:1,recurring:0},{month:month(1),gross:12.5,fees:1.1,payments:3,recurring:1},{month:month(0),gross:7.4,fees:.78,payments:4,recurring:2}],
   last_payment_at:iso(2*86400000),last_ok:iso(3600000),last_error:null,goal:10},
@@ -121,10 +121,10 @@ try{
   await p.click('[data-feedback]');await p.waitForTimeout(100);assert(calls.includes('feedback_archive'),'feedback archived');
   await p.click('[data-action="paypal"]');await p.waitForTimeout(150);assert.equal(synced,1,'paypal sync called');
   // Ohne Wert unter 5 Lernenden: Strich statt Zahl.
-  overview.activity={...overview.activity,practiced_today:null,streak_avg:null};
+  overview.activity={...overview.activity,practiced_today:null,learning_days_avg:null};
   await p.click('[data-action="reload"]');await p.waitForTimeout(150);
   assert((await p.textContent('#admin')).includes('ab 5 Lernenden'),'small groups hidden');
-  overview.activity={...overview.activity,practiced_today:1940,streak_avg:4.2};
+  overview.activity={...overview.activity,practiced_today:1940,learning_days_avg:4.2};
   // Klassenräume: nur Kennzahlen, archivieren, löschen mit Namen
   await p.click('a[data-view="rooms"]');await p.waitForSelector('.admin-table');
   const roomText=(await p.textContent('#admin')).replace(/[\u00a0\u202f]/g,' ');

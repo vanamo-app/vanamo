@@ -1,25 +1,25 @@
-// Vanamo – Animation für die Tagesserie (Angemeldete).
+// Vanamo – Animation für die Lerntage (Angemeldete).
 // Kommt einmal am Tag: beim ersten abgeschlossenen Block (Wiederholen, Übung, neue Sätze), auf dem Abschlussbildschirm.
 // Ablauf (gut 4 s, ein Klick spult vor): Der Schwarm fliegt herein und schwenkt in eine Kreisbahn um die Bildmitte,
-// der goldene Vogel vorneweg. In der ersten Runde entsteht hinter ihm die Zahl der Serie (wie von einem Uhrzeiger
+// der goldene Vogel vorneweg. In der ersten Runde entsteht hinter ihm die Zahl der Lerntage (wie von einem Uhrzeiger
 // aufgedeckt), in der zweiten zieht der Schwarm ab. Dann schießt der goldene Vogel nach oben in die Pille, während
 // Zahl, Text und Wochentage zu Staub zerfallen. Er trifft die Pille
-// „heute geübt" und zerplatzt dort; die Pille zeigt zwei Sekunden die Serie in Gold und wird wieder normal.
+// „heute geübt" und zerplatzt dort; die Pille zeigt zwei Sekunden die Lerntage in Gold und wird wieder normal.
 // Bei „Bewegung reduzieren" wird nur die Pille kurz gold. Farben: --gold, --gold-hi, --gold-deep je Farbschema (style.css).
-import {t} from './i18n.mjs?v=28';
-import {practiceStreak,weekActivity} from './home-extras.mjs?v=15';
+import {t} from './i18n.mjs?v=29';
+import {learningDays,weekActivity} from './home-extras.mjs?v=16';
 
 const KEY='vanamo-streak-day';
 const reducedMotion=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const escape=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dayKey=d=>d.toLocaleDateString('sv-SE');
-// „Tage in Folge" ohne Zahl – aus den vorhandenen Texten, damit die Übersetzung mitkommt.
-const streakLabel=n=>(n===1?t('1 Tag in Folge').replace(/1\s*/,''):t('{0} Tage in Folge','')).trim();
+// „Lerntage" ohne Zahl – aus den vorhandenen Texten, damit die Übersetzung mitkommt.
+const streakLabel=n=>(n===1?t('1 Lerntag').replace(/1\s*/,''):t('{0} Lerntage','')).trim();
 
 /** Zeigt die Animation, wenn heute geübt wurde und sie heute noch nicht kam. Gibt true zurück, wenn sie startet. */
 export function celebrateStreak(daily={},{date=new Date(),force=false,delay=200}={}){
  try{
-  const today=dayKey(date),streak=practiceStreak(daily,date);
+  const today=dayKey(date),streak=learningDays(daily);
   const pill=document.querySelector('header>.today.is-account');
   if(!pill||!(Number(daily[today])>0)||!streak)return false;
   if(!force){
@@ -176,10 +176,10 @@ async function playStreak(streak,pill,{label,week}){
  await circle(A0,A0+Math.PI*2,1000,p=>p);
  // 4) … und der goldene Vogel schießt nach oben in die Pille
  const pr=pill.getBoundingClientRect(),tx=pr.left+pr.width/2,ty=pr.top+pr.height/2;
- // Ausklang: Zahl, „Tage in Folge" und die Wochentage zerfallen zu Staub und schweben nach oben weg; der Schleier bleibt,
+ // Ausklang: Zahl, „Lerntage" und die Wochentage zerfallen zu Staub und schweben nach oben weg; der Schleier bleibt,
  // bis der Staub fast fort ist. Die Pille liegt dabei schon über dem Schleier.
  pill.classList.add('streak-target');
- // Zahl, „Tage in Folge" und Wochentage bleiben noch eine Sekunde stehen, während der Vogel schon losfliegt – dann zerfallen sie.
+ // Zahl, „Lerntage" und Wochentage bleiben noch eine Sekunde stehen, während der Vogel schon losfliegt – dann zerfallen sie.
  const ending=wait(1000).then(()=>{
   // Die Zahl löst sich in Goldstaub auf, der Text blendet aus; danach kommt die Seite zurück.
   const img=nctx.getImageData(0,0,num.width,num.height),step=Math.max(3,Math.round((small?4.4:3.6)*dpr));
@@ -188,7 +188,7 @@ async function playStreak(streak,pill,{label,week}){
    const py=box.y+y/dpr,rel=(py-(base+top))/(bottom-top);
    motes.push({x:box.x+x/dpr+(Math.random()-.5)*2,y:py+(Math.random()-.5)*2,vx:(Math.random()-.5)*30+14,vy:-(18+Math.random()*52),r:1.5+Math.random()*1.6,hi:Math.random()<.3,life:1,dur:.6+Math.random()*.7,t0:clock+rel*260+Math.random()*340});
   }
-  // Auch „Tage in Folge" und die Wochentage zerfallen: einmal abzeichnen, die Bildpunkte werden zu Staub in ihrer Farbe.
+  // Auch „Lerntage" und die Wochentage zerfallen: einmal abzeichnen, die Bildpunkte werden zu Staub in ihrer Farbe.
   try{
    const cr=cap.getBoundingClientRect(),cc=document.createElement('canvas');cc.width=Math.round(W*dpr);cc.height=Math.round((cr.height+8)*dpr);
    const g=cc.getContext('2d',{willReadFrequently:true});g.setTransform(dpr,0,0,dpr,0,-(cr.top-4)*dpr);g.textAlign='center';g.textBaseline='middle';
@@ -220,7 +220,7 @@ async function playStreak(streak,pill,{label,week}){
  }finally{if(alive)done();}
 }
 
-// Pille: 1 s Serie in Gold, dann wieder „heute geübt". Zähler und Beschriftung bleiben im Dokument (nur ausgeblendet),
+// Pille: 1 s Lerntage in Gold, dann wieder „heute geübt". Zähler und Beschriftung bleiben im Dokument (nur ausgeblendet),
 // damit renderToday() und die Klick-Logik der Pille ungestört weiterlaufen.
 function restorePill(pill){pill.querySelectorAll('.streak-swap').forEach(el=>el.remove());pill.classList.remove('streak-gold');pill.style.minWidth='';}
 async function goldPill(pill,streak,label,wait){

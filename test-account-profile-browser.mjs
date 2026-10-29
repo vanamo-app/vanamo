@@ -280,12 +280,13 @@ try{
  assert.match(await page.locator('.account-notice').textContent(),/ungültig oder abgelaufen/);
  await s.context.close();
 
- // 8) „Sichere deinen Fortschritt“: drei Tage in Folge und keine E-Mail → einmal ein Hinweis mit Knopf
- const days=n=>Object.fromEntries(Array.from({length:n},(_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return [d.toLocaleDateString('sv-SE'),5];}));
+ // 8) „Sichere deinen Fortschritt“: drei Lerntage und keine E-Mail → einmal ein Hinweis mit Knopf
+ // n Lerntage mit je zwei Tagen Pause dazwischen: Pausen zählen nicht gegen den Hinweis.
+ const days=n=>Object.fromEntries(Array.from({length:n},(_,i)=>{const d=new Date();d.setDate(d.getDate()-3*i);return [d.toLocaleDateString('sv-SE'),5];}));
  s=await scenario({viewport:{width:1280,height:900},register:false,signedIn:{daily:days(3)}});page=s.page;
  await page.mouse.click(5,5);
  await page.waitForSelector('.account-notice.has-action',{timeout:30000});
- assert.match(await page.locator('.account-notice').textContent(),/Schon 3 Tage in Folge! Sichere deinen Fortschritt/);
+ assert.match(await page.locator('.account-notice').textContent(),/Schon 3 Lerntage! Sichere deinen Fortschritt/);
  assert.deepEqual(s.emailCalls.map(c=>c.action),['status']);
  await shot(page,'hinweis-fortschritt-sichern');
  await page.click('.account-notice-action');
@@ -294,27 +295,27 @@ try{
  await page.waitForFunction(()=>document.activeElement.id==='profile-email');
  await page.click('#close-account');
  await page.reload();await page.waitForTimeout(800);await page.mouse.click(5,5);await page.waitForTimeout(9000);
- assert.equal(await page.locator('.account-notice').count(),0,'bei derselben Serie kommt der Hinweis nicht noch einmal');
+ assert.equal(await page.locator('.account-notice').count(),0,'bei denselben Lerntagen kommt der Hinweis nicht noch einmal');
  assert.equal(await page.evaluate(()=>localStorage.getItem('vanamo-email-hint-00000000-0000-4000-8000-000000000009')),'3');
- // Zehn Tage in Folge und immer noch keine Adresse: der Hinweis kommt ein zweites Mal, danach nicht mehr
+ // Zehn Lerntage und immer noch keine Adresse: der Hinweis kommt ein zweites Mal, danach nicht mehr
  await page.evaluate(daily=>{const state=JSON.parse(localStorage.getItem('suomi-learning-v1'));state.daily=daily;localStorage.setItem('suomi-learning-v1',JSON.stringify(state));},days(10));
  await page.reload();await page.waitForTimeout(800);await page.mouse.click(5,5);
  await page.waitForSelector('.account-notice.has-action',{timeout:30000});
- assert.match(await page.locator('.account-notice').textContent(),/Schon 10 Tage in Folge! Sichere deinen Fortschritt/);
+ assert.match(await page.locator('.account-notice').textContent(),/Schon 10 Lerntage! Sichere deinen Fortschritt/);
  await page.click('.account-notice-close');
  assert.equal(await page.evaluate(()=>localStorage.getItem('vanamo-email-hint-00000000-0000-4000-8000-000000000009')),'10');
  await page.reload();await page.waitForTimeout(800);await page.mouse.click(5,5);await page.waitForTimeout(9000);
  assert.equal(await page.locator('.account-notice').count(),0,'nach der zweiten Stufe kommt nichts mehr');
  assert.deepEqual(s.errors,[]);
  await s.context.close();
- // Mit hinterlegter Adresse oder kürzerer Serie kommt kein Hinweis
+ // Mit hinterlegter Adresse oder weniger als drei Lerntagen kommt kein Hinweis
  s=await scenario({viewport:{width:1280,height:900},register:false,signedIn:{daily:days(3),mail:{email:'lumi@example.org',verified:true}}});page=s.page;
  await page.mouse.click(5,5);await page.waitForFunction(()=>!!localStorage.getItem('vanamo-email-hint-00000000-0000-4000-8000-000000000009'),null,{timeout:30000});
  await page.waitForTimeout(500);assert.equal(await page.locator('.account-notice').count(),0);
  await s.context.close();
  s=await scenario({viewport:{width:1280,height:900},register:false,signedIn:{daily:days(2)}});page=s.page;
  await page.mouse.click(5,5);await page.waitForTimeout(9000);
- assert.equal(await page.locator('.account-notice').count(),0);assert.equal(s.emailCalls.length,0,'unter drei Tagen wird gar nicht erst nachgefragt');
+ assert.equal(await page.locator('.account-notice').count(),0);assert.equal(s.emailCalls.length,0,'unter drei Lerntagen wird gar nicht erst nachgefragt');
  await s.context.close();
 
  // 8b) Anmelden: Das Fenster zeigt bis zum Schließen das Anmeldeformular, nie kurz „Dein Konto“ – danach die Startseite.

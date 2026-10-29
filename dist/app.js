@@ -1,4 +1,4 @@
-import {tc,uiLanguage} from './i18n.mjs?v=28';
+import {tc,uiLanguage} from './i18n.mjs?v=29';
 import {canSearch,createSearch} from './wordsearch.mjs';
 import {mountSearch,searchInstructions} from './wordsearch-ui.mjs?v=64';
 import {createWordExercise,wordAnswerMatches,finnishSentenceMatches,sentenceWords} from './word-practice.mjs?v=61';
@@ -15,7 +15,7 @@ import {mountWordLookup,loadLexicon,lookupForSentence,splitSentence,getLexicon} 
 import {planVerbs,planEndings,interleave,alternate,verbCard,endingCard,NEW_ONLY_BELOW} from './daily-mix.mjs?v=3';
 import {validateEndingsProgress,mergeEndingsProgress,markEndingAnswered,missedEndings} from './endings-progress.mjs?v=1';
 import {createGuestCard,shortGloss,flipWordIndex} from './guest-card.mjs?v=14';
-import {renderGreeting,renderToday,createDailySentence,animateProgress,GOAL_CHOICES,DAILY_GOAL} from './home-extras.mjs?v=15';
+import {renderGreeting,renderToday,createDailySentence,animateProgress,GOAL_CHOICES,DAILY_GOAL} from './home-extras.mjs?v=16';
 import {createHomeTabs} from './home-tabs.mjs?v=4';
 import {hasBook,loadBook,loadChapter,stationsByTopic,readChapters,markRead,renderIndex,renderChapter,HASH as GRAMMAR_HASH} from './grammar-book.mjs?v=1';
 import {buildDifficultDeck} from './difficult-words.mjs?v=2';
@@ -1149,14 +1149,14 @@ document.addEventListener('keydown',e=>{if($('practice-view').hidden||document.q
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();else if(ready)renderStats();});
 // Sätze, Qualitätsliste und Grammatik gleichzeitig laden; die Startseite wartet nur auf die ersten beiden.
 // Ohne Konto zeigt die Startseite statt „Sätze wiederholen“ eine Satzkarte zum Ausprobieren.
-// Angemeldete: Begrüßung, Tagesziel mit Woche/Serie und „Satz des Tages“ (siehe home-extras.mjs).
+// Angemeldete: Begrüßung, Tagesziel mit Woche/Lerntagen und „Satz des Tages“ (siehe home-extras.mjs).
 // Begrüßt wird mit dem Spitznamen; ohne Spitznamen mit dem Benutzernamen.
 function accountName(){try{const meta=JSON.parse(localStorage.getItem('suomi-auth-session-v1')||'null')?.user?.user_metadata||{};return Array.from(String(meta.nickname||'').replace(/\s+/g,' ').trim()).slice(0,30).join('')||meta.username||'';}catch{return '';}}
 window.addEventListener('vanamo:session',()=>{try{renderHomeExtras();}catch{}});
 function accountId(){try{return JSON.parse(localStorage.getItem('suomi-auth-session-v1')||'null')?.user?.id||'';}catch{return '';}}
 var dailySentence=null;
-// Tagesserie: einmal am Tag, beim ersten abgeschlossenen Block, kommt die Animation mit dem goldenen Vogel (streak.mjs).
-function celebrateStreak(){if(!accountActive())return;import('./streak.mjs?v=8').then(m=>m.celebrateStreak(memory.daily)).catch(()=>{});}
+// Lerntage: einmal am Tag, beim ersten abgeschlossenen Block, kommt die Animation mit dem goldenen Vogel (streak.mjs).
+function celebrateStreak(){if(!accountActive())return;import('./streak.mjs?v=9').then(m=>m.celebrateStreak(memory.daily)).catch(()=>{});}
 function renderHomeExtras(){
  if(typeof memory==='undefined'||!memory)return;
  const account=accountActive();
@@ -1286,7 +1286,7 @@ function mountHomeTreeLater(){
  homeTree=true;
  // Das kleine Modul (Platzhalter, Fortschritt) gleich; den 3D-Baum lädt es selbst erst nach dem Intro.
  const waitIntro=new Promise(res=>{const wait=()=>introActive()?setTimeout(wait,150):res();wait();}).then(()=>new Promise(r=>setTimeout(r,400)));
- import('./home-tree.mjs?v=23')
+ import('./home-tree.mjs?v=50')
   .then(m=>{homeTree=m.mountHomeTree({getReviews:()=>memory.reviews,waitIntro});})
   .catch(err=>{console.warn('Baum',err);homeTree=null;});
 }

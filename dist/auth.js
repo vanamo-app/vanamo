@@ -1,4 +1,4 @@
-import {uiLocale,uiLanguage} from './i18n.mjs?v=28';
+import {uiLocale,uiLanguage} from './i18n.mjs?v=29';
 import {mergeVerbProgress} from './verb-practice.mjs';
 import {mergeEndingsProgress} from './endings-progress.mjs?v=1';
 import {mergePerformanceEvents} from './learning-insights.mjs';
@@ -412,17 +412,17 @@ function notice(text,error=false,action=null){
   if(!error&&!action)setTimeout(()=>toast.remove(),9000);
   return toast;
 }
-// „Sichere deinen Fortschritt“: Wer drei Tage in Folge geübt und keine E-Mail-Adresse hinterlegt hat, bekommt diesen
-// Hinweis – und ein zweites Mal nach zehn Tagen in Folge, wenn dann immer noch keine Adresse hinterlegt ist. Gemerkt
-// wird je Konto und Gerät die höchste Stufe, die schon gezeigt wurde. Er wartet, bis Intro und Serien-Animation vorbei
+// „Sichere deinen Fortschritt“: Wer drei Lerntage beisammen und keine E-Mail-Adresse hinterlegt hat, bekommt diesen
+// Hinweis – und ein zweites Mal nach zehn Lerntagen, wenn dann immer noch keine Adresse hinterlegt ist. Gemerkt
+// wird je Konto und Gerät die höchste Stufe, die schon gezeigt wurde. Er wartet, bis Intro und Lerntage-Animation vorbei
 // und keine Fenster offen sind.
 const EMAIL_HINT_STEPS=[3,10],EMAIL_HINT_KEY='vanamo-email-hint-';
 // Gespeichert ist die Zahl der Tage der zuletzt gezeigten Stufe („1“ aus der ersten Fassung bedeutet: Stufe 3 gezeigt).
 const emailHintShown=userId=>{const value=Number(localStorage.getItem(EMAIL_HINT_KEY+userId))||0;return value===1?3:value;};
-function practiceStreakDays(daily={}){
-  const key=d=>d.toLocaleDateString('sv-SE'),d=new Date();d.setHours(12,0,0,0);
-  if(!(Number(daily[key(d)])>0))d.setDate(d.getDate()-1);
-  let n=0;while(Number(daily[key(d)])>0&&n<400){n++;d.setDate(d.getDate()-1);}
+// Lerntage wie in home-extras.mjs: alle Tage mit Übung, Pausen ziehen nichts ab.
+function learningDays(daily={}){
+  let n=0;
+  for(const [key,count] of Object.entries(daily||{}))if(/^\d{4}-\d{2}-\d{2}$/.test(key)&&Number(count)>0)n++;
   return n;
 }
 let emailHintBusy=false,emailHintTimer=null;
@@ -431,7 +431,7 @@ function scheduleEmailHint(delay=5000){clearTimeout(emailHintTimer);emailHintTim
 async function maybeEmailHint(){
   const user=session?.user;if(!user||!configured()||emailHintBusy)return;
   let step=0;
-  try{const shown=emailHintShown(user.id),streak=practiceStreakDays(currentLearning()?.daily||{});step=EMAIL_HINT_STEPS.filter(days=>days>shown&&streak>=days).pop()||0;}catch{return;}
+  try{const shown=emailHintShown(user.id),learned=learningDays(currentLearning()?.daily||{});step=EMAIL_HINT_STEPS.filter(days=>days>shown&&learned>=days).pop()||0;}catch{return;}
   if(!step)return;
   const busy=document.documentElement.classList.contains('intro-pending')||document.documentElement.classList.contains('intro-running')||document.querySelector('dialog[open],.streak-veil,.sync-toast');
   if(busy){scheduleEmailHint(4000);return;}
@@ -441,7 +441,7 @@ async function maybeEmailHint(){
     if(session?.user?.id!==user.id)return;
     try{localStorage.setItem(EMAIL_HINT_KEY+user.id,String(step));}catch{}
     if(state.email||!state.configured)return;
-    notice(`Schon ${practiceStreakDays(currentLearning()?.daily||{})} Tage in Folge! Sichere deinen Fortschritt: Mit einer E-Mail-Adresse kannst du ein vergessenes Passwort zurücksetzen.`,false,{label:'E-Mail hinterlegen',run:()=>{openAccount('login');setTimeout(()=>{$('email-form')?.scrollIntoView({block:'center'});$('profile-email')?.focus();},50);}});
+    notice(`Schon ${learningDays(currentLearning()?.daily||{})} Lerntage! Sichere deinen Fortschritt: Mit einer E-Mail-Adresse kannst du ein vergessenes Passwort zurücksetzen.`,false,{label:'E-Mail hinterlegen',run:()=>{openAccount('login');setTimeout(()=>{$('email-form')?.scrollIntoView({block:'center'});$('profile-email')?.focus();},50);}});
   }catch{}finally{emailHintBusy=false;}
 }
 let emailState={email:'',verified:false};
@@ -618,12 +618,12 @@ window.suomiAccountData=async data=>{
   if(!r.ok||!user?.id||!session)throw new Error('Kontodaten konnten nicht gespeichert werden.');
   saveSession({...session,user});return user;
 };
-import('./classrooms.js?v=111').catch(()=>{});
-import('./quality-review.js?v=8').catch(()=>{});
+import('./classrooms.js?v=112').catch(()=>{});
+import('./quality-review.js?v=9').catch(()=>{});
 // suomiAccountFresh: erfüllt, sobald die Kontodaten frisch vom Server da sind (oder es nichts zu holen gibt) –
 // z. B. für den Baum: ob ein neuer Vogel schon auf einem anderen Gerät gezeigt wurde.
 let accountFresh;window.suomiAccountFresh=new Promise(resolve=>{accountFresh=resolve;});
 if(session?.user&&configured())refreshSession().then(async ok=>{if(!ok)return;try{await pullAndMerge();}catch(err){syncState('Synchronisierung fehlgeschlagen. Bitte erneut versuchen.',true);status(err.message,true);}}).catch(syncError).finally(()=>{syncReady=true;accountFresh();if(syncQueued)scheduleSync();scheduleEmailHint();});
 else{syncReady=true;accountFresh();}
-// Auch nach einer Übungsrunde prüfen – die Serie kann gerade erst drei Tage erreicht haben.
+// Auch nach einer Übungsrunde prüfen – gerade kann der dritte oder zehnte Lerntag dazugekommen sein.
 window.addEventListener('suomi-learning-changed',()=>scheduleEmailHint());

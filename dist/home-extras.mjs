@@ -2,7 +2,7 @@
 //
 // - Begrüßung je nach Tageszeit: steht zuerst auf Deutsch und dreht sich zwei Sekunden nachdem
 //   die Startseite fertig zu sehen ist auf Finnisch um (antippen dreht sie wieder zurück)
-// - „heute geübt“ als Ring zum Tagesziel, Wochenreihe Mo–So und Serie in Tagen
+// - „heute geübt“ als Ring zum Tagesziel, Wochenreihe Mo–So und Lerntage (alle Tage mit Übung)
 // - „Satz des Tages“: ein Satz aus den eigenen Sätzen mit Wortbedeutungen und Übersetzung, zum Anhören
 // - kleine Animationen (Hochzählen, Ring füllen); bei „reduzierter Bewegung“ entfallen sie
 // Gäste sehen weiterhin die ursprüngliche Startseite mit Intro und Satzkarte.
@@ -69,17 +69,17 @@ function flipWhenShown(h1,flip){
  check();
 }
 
-// ---------- Tagesziel, Woche, Serie ----------
+// ---------- Tagesziel, Woche, Lerntage ----------
 export function weekActivity(daily={},date=new Date()){
  const monday=new Date(date);monday.setHours(12,0,0,0);monday.setDate(monday.getDate()-((monday.getDay()+6)%7));
  const today=dayKey(date);
  return WEEKDAYS.map(([short,long],i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);const key=dayKey(d);return {short,long,key,count:Number(daily[key])||0,today:key===today,future:key>today};});
 }
-// Tage in Folge mit Übung; heute zählt mit, ein noch leerer heutiger Tag bricht die Serie nicht.
-export function practiceStreak(daily={},date=new Date()){
- const d=new Date(date);d.setHours(12,0,0,0);
- if(!(Number(daily[dayKey(d)])>0))d.setDate(d.getDate()-1);
- let n=0;while(Number(daily[dayKey(d)])>0&&n<3660){n++;d.setDate(d.getDate()-1);}
+// Lerntage: alle Tage, an denen geübt wurde. Pausen ziehen nichts ab – die Zahl fängt nie wieder bei null an.
+// (Bis Oktober 2026 stand hier eine Serie „Tage in Folge“, die nach einem verpassten Tag wieder bei null begann.)
+export function learningDays(daily={}){
+ let n=0;
+ for(const [key,count] of Object.entries(daily||{}))if(/^\d{4}-\d{2}-\d{2}$/.test(key)&&Number(count)>0)n++;
  return n;
 }
 
@@ -88,7 +88,7 @@ export const GOAL_CHOICES=[5,10,20,30,50];
 const CHEVRON='<svg class="today-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 let shownCount=null;
 // Angemeldete: „heute geübt“ sitzt als kleine Pille im Header (auf allen Seiten sichtbar). Ein Klick klappt
-// darunter Woche und Serie auf, ein Klick auf die Zahl öffnet die Auswahl fürs Tagesziel. Gäste: Kasten neben der Überschrift.
+// darunter Woche und Lerntage auf, ein Klick auf die Zahl öffnet die Auswahl fürs Tagesziel. Gäste: Kasten neben der Überschrift.
 export function renderToday(box,{count,daily,account,date=new Date(),goal=DAILY_GOAL,onGoalChange}){
  if(!box)return;
  const counter=box.querySelector('#today-count');
@@ -126,8 +126,8 @@ export function renderToday(box,{count,daily,account,date=new Date(),goal=DAILY_
  const offset=(RING_C*(1-Math.min(1,count/goal))).toFixed(2);
  requestAnimationFrame(()=>requestAnimationFrame(()=>fill.setAttribute('stroke-dashoffset',offset)));
  box.querySelector('.today-week').innerHTML=weekActivity(daily,date).map(d=>`<li class="${d.count?'done':''}${d.today?' is-today':''}${d.future?' future':''}" title="${d.long}${d.count?`: ${d.count} geübt`:''}"><span aria-hidden="true">${d.short}</span><span class="sr-only">${d.long}${d.count?': geübt':d.future?'':': nicht geübt'}</span></li>`).join('');
- const streak=practiceStreak(daily,date);
- box.querySelector('.today-streak').innerHTML=streak?`<span class="today-flame" aria-hidden="true"></span>${streak===1?'1 Tag in Folge':`${streak} Tage in Folge`}`:'Starte heute deine Serie';
+ const learned=learningDays(daily);
+ box.querySelector('.today-streak').innerHTML=learned?`<span class="today-flame" aria-hidden="true"></span>${learned===1?'1 Lerntag':`${learned} Lerntage`}`:'Dein erster Lerntag wartet';
  countUp(counter,shownCount??0,count);shownCount=count;
 }
 

@@ -65,6 +65,10 @@ begin
  reset role;
  assert (select page from admin_private.feedback limit 1)='/','feedback page without query';
 
+ -- Lerntage: jeder gültige Tag mit Übung zählt einmal, Pausen setzen nichts zurück.
+ assert admin_private.learning_days(jsonb_build_object('2026-01-02',1,'2026-03-30',2,today,5,yday,'0','kaputt',3,'2026-13-45',4))=3,'learning days: every valid day with practice';
+ assert admin_private.learning_days('[]'::jsonb)=0 and admin_private.learning_days(null)=0,'no daily object, no learning days';
+
  -- Admin: overview, lists and actions.
  insert into public.learning_state(user_id,state) values
    (a,jsonb_build_object('daily',jsonb_build_object(today,10,yday,5,'kaputt',3,'2026-13-45',4),'reviews',jsonb_build_object('1:fi-de','{}'::jsonb))),
@@ -86,7 +90,7 @@ begin
  assert (r#>>'{accounts,total}')::int>=2,'accounts counted';
  assert jsonb_array_length(r#>'{accounts,weekly}')=12,'twelve weeks';
  assert (r#>>'{activity,today}')::int=1,'one learner active today (broken values ignored)';
- assert r#>'{activity,practiced_today}'='null'::jsonb and r#>'{activity,streak_avg}'='null'::jsonb,'small groups hidden';
+ assert r#>'{activity,practiced_today}'='null'::jsonb and r#>'{activity,learning_days_avg}'='null'::jsonb,'small groups hidden';
  assert (r#>>'{todo,errors}')::int>=1 and (r#>>'{todo,feedback}')::int=1,'todo counts';
  assert not (r::text ~ a::text) and not (r::text ~ u::text),'no account ids in overview';
  r:=public.admin_api('errors');

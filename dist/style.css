@@ -583,7 +583,7 @@ html.intro-running,.intro-running body{overflow:hidden}
 .today-details{grid-column:1/-1;display:grid;gap:8px}
 .today-details[hidden]{display:none}
 .today.is-account>.today-details,.today.is-account>.today-goal-picker{max-width:none;font-size:inherit}
-.today-goal-picker{position:absolute;top:calc(100% + 8px);right:0;z-index:20;padding:10px 12px 12px;border:2px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:3px 3px 0 var(--line);cursor:default}
+.today-goal-picker{position:absolute;top:calc(100% + 8px);right:0;z-index:42;padding:10px 12px 12px;border:2px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:3px 3px 0 var(--line);cursor:default}
 .today-goal-picker[hidden]{display:none}
 .today-goal-picker p{margin:0 0 8px;font-size:12px;font-weight:700;color:var(--ink-soft)}
 .today-goal-picker div{display:flex;gap:6px}
@@ -626,7 +626,8 @@ header>.today .today-ring svg{display:none}
 header>.today.is-account .today-ring>span{font-size:22px}
 header>.today.is-account .today-label{font-size:14px;max-width:none;text-align:left}
 header>.today.goal-reached .today-ring>span{color:var(--good)}
-header>.today>.today-details{position:absolute;top:calc(100% + 8px);right:0;z-index:20;width:max-content;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:3px 3px 0 var(--line);cursor:default}
+/* Aufklapper und Tagesziel-Auswahl liegen über dem Konto-Knopf (z-index 41) – am Handy sitzt er in der Reihe darunter. */
+header>.today>.today-details{position:absolute;top:calc(100% + 8px);right:0;z-index:42;width:max-content;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:3px 3px 0 var(--line);cursor:default}
 header>.today .today-week{gap:4px}
 header>.today .today-week li{width:22px;height:22px;font-size:10px}
 header>.today .today-streak{font-size:12px}
@@ -1792,10 +1793,23 @@ html.tree-view-open,html.tree-view-open body{overflow:hidden}
 .tree-view-hint{position:absolute;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;margin:0;padding:9px 14px;white-space:nowrap;border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:99px;background:color-mix(in srgb,var(--bg) 85%,transparent);font:500 13px/1 'DM Sans',sans-serif;color:var(--ink-soft);pointer-events:none;transition:opacity .5s ease}
 .tree-view-hint svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tree-view-hint.is-gone{opacity:0!important}
-.tree-view :is(.tree-view-label,.tree-view-close,.tree-view-hint){opacity:0;transition:opacity .35s ease .1s}
-.tree-view.is-open .tree-view-glass,.tree-view.is-open :is(.tree-view-label,.tree-view-close,.tree-view-hint){opacity:1}
+/* Play-Knopf unten in der Mitte (Nutzer 26.10.); der Hinweis „Ziehen zum Drehen“ und Meldungen stehen dann darüber */
+.tree-view-play{position:absolute;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 14px));transform:translateX(-50%);display:grid;place-items:center;width:56px;height:56px;min-width:0;min-height:0;padding:0;border:1px solid color-mix(in srgb,var(--ink) 35%,transparent);border-radius:50%;background:color-mix(in srgb,var(--bg) 85%,transparent);box-shadow:none;color:var(--ink);cursor:pointer}
+.tree-view-play[hidden]{display:none}
+.tree-view-play:hover{border-color:var(--ink);background:color-mix(in srgb,var(--bg) 85%,transparent)}
+.tree-view-play svg{width:28px;height:28px;fill:currentColor}
+.tree-view-play.is-running,.tree-view-play.is-quiet{cursor:default}
+.tree-view-play.is-quiet svg{opacity:.4}
+/* Ring pulsiert nur in der Farbe (ohne eigene Grafik-Ebene): ein skalierter Rand zeigte in Chrome kurz ein Kreuz (Nutzer 27.10.) */
+.tree-view-play.is-running::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--orange);animation:tree-play-pulse 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes tree-play-pulse{0%,100%{border-color:color-mix(in srgb,var(--orange) 30%,transparent)}50%{border-color:color-mix(in srgb,var(--orange) 90%,transparent)}}
+.tree-view:has(.tree-view-play:not([hidden])) .tree-view-hint{bottom:max(94px,calc(env(safe-area-inset-bottom) + 86px))}
+.tree-view-msg{position:absolute;left:50%;bottom:max(94px,calc(env(safe-area-inset-bottom) + 86px));transform:translateX(-50%);margin:0;padding:9px 14px;white-space:nowrap;border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:99px;background:color-mix(in srgb,var(--bg) 85%,transparent);font:500 13px/1 'DM Sans',sans-serif;color:var(--ink-soft);pointer-events:none;opacity:0;transition:opacity .35s ease}
+.tree-view-msg.is-on{opacity:1}
+.tree-view :is(.tree-view-label,.tree-view-close,.tree-view-hint,.tree-view-play){opacity:0;transition:opacity .35s ease .1s}
+.tree-view.is-open .tree-view-glass,.tree-view.is-open :is(.tree-view-label,.tree-view-close,.tree-view-hint,.tree-view-play){opacity:1}
 @media(min-width:701px){.tree-view-label{left:40px;top:40px}.tree-view-close{right:28px;top:26px}}
-@media(prefers-reduced-motion:reduce){.tree-view-glass,.tree-view :is(.tree-view-label,.tree-view-close,.tree-view-hint){transition:none}}
+@media(prefers-reduced-motion:reduce){.tree-view-glass,.tree-view :is(.tree-view-label,.tree-view-close,.tree-view-hint,.tree-view-play,.tree-view-msg){transition:none}.tree-view-play.is-running::after{animation:none;opacity:.7}}
 
 /* Baum-Test (home-tree.mjs, nur Testkonto): Stufen und Jahreszeiten durchschauen – nur Anzeige. */
 .baum-test{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:-14px auto 28px;padding:12px 14px;border:1px dashed color-mix(in srgb,var(--ink) 35%,transparent);border-radius:14px;background:color-mix(in srgb,var(--bg) 88%,transparent);font:500 13px/1.3 'DM Sans',sans-serif;color:var(--ink-soft)}
