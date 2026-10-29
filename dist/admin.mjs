@@ -153,7 +153,7 @@ export function overviewMarkup(o,{reports=[],errors=[],feedback=[],classReports=
    <section class="admin-card" aria-labelledby="admin-weeks-title"><div class="admin-card-head"><h2 id="admin-weeks-title">Neue Konten pro Woche</h2><span class="admin-muted">12 Wochen</span></div>
     <div class="admin-bars">${barsMarkup(weekly,{tips:weekTips,current:weekly.length-1})}</div>
     <div class="admin-axis"><span>vor 12 Wochen</span><span>diese Woche</span></div>
-    <div class="admin-mini"><div><div class="n">${act.streak_avg==null?'–':esc(String(act.streak_avg).replace('.',','))}</div><div class="admin-lbl">Tage Serie im Schnitt${act.streak_avg==null?` (ab ${min})`:''}</div></div><div><div class="n">${num(act.d30)}</div><div class="admin-lbl">in 30 Tagen aktiv</div></div><div><div class="n">${num(sw.names)}</div><div class="admin-lbl">Namen im Schwarm</div></div></div>
+    <div class="admin-mini"><div><div class="n">${act.learning_days_avg==null?'–':esc(String(act.learning_days_avg).replace('.',','))}</div><div class="admin-lbl">Lerntage im Schnitt${act.learning_days_avg==null?` (ab ${min})`:''}</div></div><div><div class="n">${num(act.d30)}</div><div class="admin-lbl">in 30 Tagen aktiv</div></div><div><div class="n">${num(sw.names)}</div><div class="admin-lbl">Namen im Schwarm</div></div></div>
    </section>
    <div class="admin-priv">${LOCK}<div><b>Datenschutz:</b> Hier stehen nur Zahlen – keine Namen, keine E-Mail-Adressen, keine Lernverläufe einzelner Personen. Summen und Durchschnitte erscheinen erst ab ${min} Lernenden. Von PayPal werden nur Beträge abgefragt, nie Namen oder Adressen. Seitenfehler sind anonym und werden nach 30 Tagen gelöscht.</div></div>
   </div>

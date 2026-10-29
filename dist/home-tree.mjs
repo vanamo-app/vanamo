@@ -17,6 +17,8 @@
 // Baum-Ansicht (Knopf unten rechts am Baum): Die Seite wird zu Milchglas, der Baum groß in der Mitte; dort lässt er
 // sich drehen und zoomen (Handy: ziehen / zwei Finger, Desktop: ziehen / Mausrad). Schließen mit X, Esc oder der
 // Zurück-Taste. Am Handy geht Drehen und Zoomen nur dort; am Desktop bleibt beides auch ohne Ansicht wie bisher.
+// Unten in der Mitte ein Play-Knopf (Nutzer 26.10.): spielt eine zu Stufe, Jahreszeit und Tageszeit passende Animation ab
+// (der Baum wählt zufällig, nie zweimal hintereinander dieselbe; die Kamera dreht dabei nach vorn); nachts die Nachttiere.
 //
 // Wachstum: nur neu gelernte Sätze zählen (verschiedene Sätze mit mindestens einer Wiederholung), je Sprache ein Baum.
 // Pflanzdatum und „Start gesehen“ liegen im Konto (user_metadata.tree.<Sprache>), das Pflanzdatum zusätzlich im Browser.
@@ -31,6 +33,52 @@
 // Besuch (ab Stufe 1): Der Eichelhäher kommt ab und zu vorbei (bei etwa jedem dritten Besuch auf „Willkommen“,
 // frühestens 8–20 s nach dem Laden, höchstens einmal pro Besuch), landet, versteckt eine Eichel und fliegt weiter.
 // Nur tagsüber, nicht bei „Weniger Bewegung“ und nicht, während der Baum wächst oder die Seite gescrollt ist.
+//
+// Bewohner (Nutzer 24.10., laufen im Baum von selbst): ab Stufe 2 der Marienkäfer (krabbelt über Stamm und Äste, fliegt ab
+// und zu ein Stück), ab Stufe 3 das Kohlmeisen-Paar (Stufe 3: setzt sich nur auf Äste; ab Stufe 4 Nistkasten –
+// Frühling/Sommer hinein und heraus, Herbst/Winter auf Dach oder Ast). Nicht nachts, der Käfer nicht im Winter.
+// Hier nur die Test-Knöpfe.
+//
+// Rabenkrähen (ab Stufe 4, Nutzer 25.10.): im Herbst und Winter kommt ab und zu ein kleiner Trupp (2–5) vorbei – Winter in
+// den kahlen Baum (hoch, außen), Herbst in den Baum, wo das Laub Platz lässt, oben auf die Krone und auf die Wiese.
+// Bleibt 1–3 min, kommt nach ein paar Minuten wieder; nur tagsüber. Der Baum entscheidet selbst wann. Hier nur der Test-Knopf.
+//
+// Erdhummeln (ab Stufe 2, Nutzer 25.10.): im Frühling und Sommer kommt ab und zu eine Erdhummel (manchmal zwei) und
+// besucht nacheinander 4–8 Blüten der Wiese, dann fliegt sie weiter; immer gleich groß, nur tagsüber, nicht bei „Weniger
+// Bewegung“. Der Baum entscheidet selbst wann (erste nach 15–40 s, danach alle 1–3 min). Hier nur der Test-Knopf.
+//
+// Tagpfauenauge und Bläulinge (Nutzer 26.10.): Tagpfauenauge ab Stufe 3 im Frühling und Sommer (besucht Blüten und klappt
+// dort langsam die Flügel auf und zu, sonnt sich am Stamm, manchmal zu zweit mit Balzflug), Hauhechel-Bläulinge ab Stufe 2
+// im Sommer (zu zweit oder dritt, tief über der Wiese). Feste Größe, nur tagsüber, nicht bei „Weniger Bewegung“. Der Baum
+// entscheidet selbst wann (erster Besuch nach 20–80 s, danach alle 2–4 min). Hier nur die Test-Knöpfe.
+//
+// Eichhörnchen von Frühling bis Herbst (ab Stufe 6, Nutzer 26.10.): wacht ab und zu auf dem Ast auf, streckt sich, läuft
+// fort und kommt mit einer Haselnuss zurück, frisst sie und schläft wieder ein; im Herbst bringt es vorher Nüsse ins
+// Astloch. Nur tagsüber, nicht bei „Weniger Bewegung“. Der Baum entscheidet selbst wann (erstes Mal nach 40–90 s, danach
+// alle 3–6 min); solange es unterwegs ist, gilt der Baum als beschäftigt (busy). Hier nur die Test-Knöpfe.
+//
+// Glühwürmchen-Tanz (Sommernacht, Nutzer 26.10.): steigen aus dem Gras, kreisen um den Baum und verglimmen (~26 s). Kommt
+// auch über den Play-Knopf; der Baum entscheidet sonst selbst wann (erstes Mal nach 40–100 s, dann alle 4–8 min). Hier nur
+// der Test-Knopf (geht auch tagsüber; schöner nachts: oben auf Nacht umschalten).
+//
+// Igel (ab Stufe 4, nachts, Nutzer 26.10.): trippelt über die Wiese vor dem Baum, schnüffelt im Gras, frisst
+// einen Wurm und trippelt weiter (etwa 30–40 s). Nachts so dunkel wie die anderen Tiere und im Gras; wäre er zu klein, wird
+// er größer gezeichnet. Kommt auch über den Play-Knopf; der Baum entscheidet sonst selbst wann (erstes Mal nach 1–2,5 min,
+// dann alle 5–10 min). Hier nur der Test-Knopf (geht auch tagsüber).
+// Winterschlaf (Nutzer 27.10.): Laubhaufen rechts hinter dem Baum (wächst im Herbst, Schnee im Winter, versinkt im Frühling);
+// der Igel kriecht im Spätherbst einmal hinein und kommt im Frühling einmal heraus – beim ersten Ansehen im Zeitfenster,
+// Tag oder Nacht; der Baum merkt sich das je Vanamo-Jahr (jahr, s. yearIndex) auf diesem Gerät, im Baum-Test nur im
+// Speicher. Nachts unterwegs ist er vom Aufwachen bis zum Winterschlaf. Test-Knöpfe „Igel zieht ein“ / „Igel wacht auf“.
+//
+// Fledermäuse (Braune Langohren, ab Stufe 5, nachts vom Frühling bis zum Herbst, Nutzer 27.10.): meist zwei oder drei jagen
+// in Schleifen um die Krone, eine fängt einen hellen Nachtfalter, hängt sich kopfüber an einen Ast, frisst ihn (die
+// Falterflügel fallen herunter), putzt sich und fliegt weiter. Nachts heller als die anderen Tiere, damit man sie vor dem
+// dunklen Himmel sieht. Kommen auch über den Play-Knopf; der Baum entscheidet sonst selbst wann (erstes Mal nach 1–3 min,
+// dann alle 5–10 min). Hier nur der Test-Knopf (geht auch tagsüber und im Winter; schöner nachts).
+//
+// Zitronenfalter (ab Stufe 1, Nutzer 24.10.): flattert ab und zu herein, setzt sich auf eine Blüte (im Herbst auf eine
+// Ähre) und fliegt weiter. Bei etwa zwei von drei Besuchen auf „Willkommen“ nach 6–18 s, sonst nach 40–90 s, danach alle
+// 1–3 min, solange die Seite offen ist. Bedingungen wie beim Häher-Besuch; Winter und Nacht prüft der Baum selbst.
 //
 // Baumvögel (Nutzer 24.10.): Mit jeder Stufe wird ein Vogel frei (avatars.mjs: stage) und sofort zum Avatar. Kurz vor
 // dem Ende des Wachsens fliegt er aus der Krone in den Konto-Kreis, danach steht sein Name statt der Begrüßung da
@@ -76,6 +124,11 @@ export function treeStage(n){
 export function yearDay(planted,now=Date.now()){
  const days=Math.max(0,(now-planted)/86400000);
  return (START_DAY+days)%YEAR_LEN;
+}
+/** Wievieltes Vanamo-Jahr seit dem Pflanzen (0 = erstes) – der Baum merkt sich damit „einmal je Jahr“ (Igel-Winterschlaf). */
+export function yearIndex(planted,now=Date.now()){
+ const days=Math.max(0,(now-planted)/86400000);
+ return Math.floor((START_DAY+days)/YEAR_LEN);
 }
 const TREE_LANG='fi';   // je Sprache ein Baum (bisher nur Finnisch)
 function accountUser(){
@@ -139,7 +192,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  paintProgress();
 
  // ---- Platzhalter (sofort)
- const day=yearDay(plantedAt()),sn=seasonOf(day),themeNow=()=>html.dataset.theme||'';
+ const day=yearDay(plantedAt()),jahr=yearIndex(plantedAt()),sn=seasonOf(day),themeNow=()=>html.dataset.theme||'';
  const ph=document.createElement('img');ph.className='home-tree-ph';ph.alt='';ph.decoding='async';ph.setAttribute('aria-hidden','true');
  ph.onload=()=>ph.classList.add('is-loaded');
  let foto=null;try{foto=JSON.parse(localStorage.getItem(SNAP_KEY)||'null');}catch{}
@@ -286,11 +339,35 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  view.setAttribute('role','dialog');view.setAttribute('aria-modal','true');view.setAttribute('aria-label','Dein Baum');
  view.innerHTML='<div class="tree-view-glass"></div><div class="tree-view-stage"></div><p class="tree-view-label"></p>'+
   '<button type="button" class="tree-view-close" aria-label="Schließen" title="Schließen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>'+
+  '<button type="button" class="tree-view-play" aria-label="Etwas passieren lassen" title="Etwas passieren lassen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 5.6v12.8a.6.6 0 0 0 .9.5l9.9-6.4a.6.6 0 0 0 0-1L9.5 5.1a.6.6 0 0 0-.9.5z"/></svg></button>'+
+  '<p class="tree-view-msg" aria-live="polite"></p>'+
   '<p class="tree-view-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4"/></svg><span></span></p>';
  document.body.append(view);
  const viewStage=view.querySelector('.tree-view-stage'),viewHint=view.querySelector('.tree-view-hint'),viewClose=view.querySelector('.tree-view-close');
  const touchUI=matchMedia('(pointer: coarse)');
  function hintAway(){clearTimeout(hintTimer);viewHint.classList.add('is-gone');}
+ // Play-Knopf (Nutzer 26.10.): eine zu Stufe, Jahreszeit und Tageszeit passende Animation – der Baum wählt (baum.play()),
+ // neue Animationen kommen dort automatisch dazu. Gesperrt, solange sie läuft oder der Baum beschäftigt ist; passt nichts
+ // (z. B. Winternacht: bisher gibt es nur Tiere für Sommernächte): grau, beim Tippen „Heute Nacht ist es still“. Nicht bei „Weniger Bewegung“.
+ const viewPlay=view.querySelector('.tree-view-play'),viewMsg=view.querySelector('.tree-view-msg');
+ let playTimer=0,msgTimer=0;
+ const quietText=night=>night?'Heute Nacht ist es still':'Gerade ist es still';
+ function playPaint(){
+  const s=baum?.playState,z=s?.zustand||'aus';
+  viewPlay.hidden=z==='aus'||reduce.matches||start!=='done';   // erst nach dem Start (die Eichel ist gesetzt)
+  viewPlay.classList.toggle('is-running',z==='laeuft');
+  viewPlay.classList.toggle('is-quiet',z==='still');
+  viewPlay.setAttribute('aria-disabled',String(z!=='bereit'));
+  const t=z==='still'?quietText(s.nacht):z==='laeuft'?'Gerade passiert etwas':'Etwas passieren lassen';
+  viewPlay.title=t;viewPlay.setAttribute('aria-label',t);
+ }
+ function playMsg(t){clearTimeout(msgTimer);viewMsg.textContent=t;viewMsg.classList.add('is-on');msgTimer=setTimeout(()=>viewMsg.classList.remove('is-on'),2600);}
+ viewPlay.addEventListener('click',()=>{
+  const s=baum?.playState;if(!s)return;hintAway();
+  if(s.zustand==='bereit'){baum.play();run();}
+  else if(s.zustand==='still')playMsg(quietText(s.nacht));
+  playPaint();
+ });
  // Ausschnitt in der Ansicht: hochkant weiter weg (ganze Wiese im Bild), quer etwas näher als auf der Seite
  const viewFrame=()=>{const r=viewStage.getBoundingClientRect(),asp=r.width/Math.max(1,r.height);return asp<1?{zoom:1.3,frameY:.14}:{zoom:.95,frameY:.3};};
  const pageFrame={zoom:.86,frameY:.34};
@@ -320,6 +397,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   if(!viewHistory){try{history.pushState({...(history.state||{}),vanamoTree:true},'');viewHistory=true;}catch{}}
   viewClose.focus({preventScroll:true});
   clearTimeout(hintTimer);hintTimer=setTimeout(hintAway,5000);
+  playPaint();clearInterval(playTimer);playTimer=setInterval(playPaint,500);
   await flip(from,stageEl,false);
   viewBusy=false;opening=false;
   if(closeAfter){const h=closeAfter.fromHistory;closeAfter=null;closeView(h);}
@@ -331,6 +409,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   if(!fromHistory&&viewHistory){viewHistory=false;try{history.back();}catch{}}
   if(fromHistory)viewHistory=false;
   viewBusy=true;
+  clearInterval(playTimer);clearTimeout(msgTimer);viewMsg.classList.remove('is-on');
   view.classList.remove('is-open');
   if(viewAnchor?.parentNode)await flip(box.getBoundingClientRect(),stageEl,true);
   baum.setFrame({...pageFrame,instant:true});
@@ -371,7 +450,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
    '<div class="baum-test-row" data-row="stage"><span class="baum-test-k">Stufe</span>'+Array.from({length:11},(_,i)=>`<button type="button" data-stage="${i}">${i}</button>`).join('')+'</div>'+
    '<div class="baum-test-row" data-row="season"><span class="baum-test-k">Jahreszeit</span>'+SEASONS.map(s=>`<button type="button" data-season="${s}">${SEASON_NAMES[s]}</button>`).join('')+'</div>'+
    '<div class="baum-test-row"><span class="baum-test-k">Tag</span><input type="range" min="0" max="111" step="1" aria-label="Tag im Vanamo-Jahr"><output></output></div>'+
-   '<div class="baum-test-row baum-test-actions"><button type="button" data-act="grow">Nächste Stufe wachsen ▸</button><button type="button" data-act="bird">Vogel dieser Stufe</button><button type="button" data-act="jay">Eichelhäher (Stufe 0)</button><button type="button" data-act="visit">Häher-Besuch</button><button type="button" data-act="squirrel">Eichhörnchen-Ausflug (Winter)</button><button type="button" data-act="mine">Mein Baum</button></div>';
+   '<div class="baum-test-row baum-test-actions"><button type="button" data-act="grow">Nächste Stufe wachsen ▸</button><button type="button" data-act="bird">Vogel dieser Stufe</button><button type="button" data-act="jay">Eichelhäher (Stufe 0)</button><button type="button" data-act="visit">Häher-Besuch</button><button type="button" data-act="falter">Zitronenfalter</button><button type="button" data-act="kaefer">Marienkäfer fliegt</button><button type="button" data-act="meise">Kohlmeisen</button><button type="button" data-act="meise-nest">Meisen: Nestbau (Frühling)</button><button type="button" data-act="meise-futter">Meisen füttern Junge</button><button type="button" data-act="meise-aus">Junge Meisen fliegen aus</button><button type="button" data-act="meise-familie">Meise mit Jungem (Sommer)</button><button type="button" data-act="meise-winter">Meisen im Winter</button><button type="button" data-act="kraehen">Krähen (Herbst/Winter)</button><button type="button" data-act="hummeln">Hummeln (Frühling/Sommer)</button><button type="button" data-act="pfau">Tagpfauenauge (Frühling/Sommer)</button><button type="button" data-act="pfau-stamm">Pfauenauge am Stamm</button><button type="button" data-act="pfau-paar">Pfauenaugen-Paar</button><button type="button" data-act="blau">Bläulinge (Sommer)</button><button type="button" data-act="squirrel">Eichhörnchen-Ausflug (Winter)</button><button type="button" data-act="eich-tag">Eichhörnchen wacht auf (Frühling–Herbst)</button><button type="button" data-act="eich-herbst">Eichhörnchen bunkert Nüsse (Herbst)</button><button type="button" data-act="glueh">Glühwürmchen-Tanz (Sommernacht)</button><button type="button" data-act="igel">Igel (Sommernacht)</button><button type="button" data-act="igel-ein">Igel zieht ein (Herbst)</button><button type="button" data-act="igel-aus">Igel wacht auf (Frühling)</button><button type="button" data-act="fledermaus">Fledermäuse (Frühling–Herbst)</button><button type="button" data-act="specht-bau1">Buntspecht: Höhle Tag 1</button><button type="button" data-act="specht-bau3">Höhle Tag 3</button><button type="button" data-act="specht-bau5">Höhle Tag 5</button><button type="button" data-act="specht-futter">Specht klettert und klopft</button><button type="button" data-act="specht-schmiede">Spechtschmiede (Winter)</button><button type="button" data-act="specht-abend">Specht abends in die Höhle</button><button type="button" data-act="specht-morgen">Specht morgens heraus</button><button type="button" data-act="mine">Mein Baum</button></div>';
   prog.after(el);
   const range=el.querySelector('input'),out=el.querySelector('output');
   // Baumvogel: Krone, Begrüßung und Konto-Kreis müssen zu sehen sein – erst nach oben scrollen
@@ -387,7 +466,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   }
   function set(o){
    testOn=true;testShown={stage:shownStage(),day:testShown?.day??day,...o};clearTimeout(fotoTimer);
-   if(o.day!=null)baum.setDay(o.day);
+   baum.setDay(testShown.day,null);   // null: im Baum-Test merkt sich der Baum „einmal je Jahr“ nur im Speicher (Igel-Winterschlaf)
    if(o.stage!=null)baum.setStage(o.stage);
    baum.resume();run();paint();
   }
@@ -399,8 +478,25 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
    else if(b.dataset.act==='bird'){const n=shownStage();if(n<1||birdBusy)return;set({});toTop(()=>playBird(n,{test:true}));}
    else if(b.dataset.act==='jay'){set({stage:0});baum.jay();}
    else if(b.dataset.act==='squirrel'){set({stage:Math.max(6,shownStage()),day:SEASON_MID.winter});setTimeout(()=>baum.winterTrip?.(),300);}
+   else if(b.dataset.act==='eich-tag'){const o={};if(shownStage()<6)o.stage=6;if(seasonOf(testShown?.day??day)==='winter')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.squirrelDay?.(),400);}   // ab Stufe 6, Frühling bis Herbst, tagsüber
+   else if(b.dataset.act==='eich-herbst'){const o={};if(shownStage()<6)o.stage=6;if(seasonOf(testShown?.day??day)!=='herbst')o.day=SEASON_MID.herbst;set(o);setTimeout(()=>baum.squirrelDay?.({autumn:true}),400);}   // Herbst: erst Nüsse ins Astloch
+   else if(b.dataset.act==='glueh'){const o={};if(seasonOf(testShown?.day??day)!=='sommer')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.fireflies?.({force:true}),400);}   // auch tagsüber (schöner nachts: oben auf Nacht umschalten)
+   else if(b.dataset.act==='igel'){const o={};if(shownStage()<4)o.stage=4;if(seasonOf(testShown?.day??day)!=='sommer')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.hedgehog?.({force:true}),400);}   // ab Stufe 4; auch tagsüber (schöner nachts: oben auf Nacht umschalten)
+   else if(b.dataset.act==='igel-ein'||b.dataset.act==='igel-aus'){const ein=b.dataset.act==='igel-ein',o={day:ein?78:4};if(shownStage()<4)o.stage=4;set(o);setTimeout(()=>baum.hedgehogSleep?.(ein?'ein':'aus'),600);}   // Laubhaufen voll (Herbst Tag 78 / Frühling Tag 4)
+   else if(b.dataset.act==='fledermaus'){const o={};if(shownStage()<5)o.stage=5;if(seasonOf(testShown?.day??day)==='winter')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.bats?.({force:true}),600);}   // ab Stufe 5; auch tagsüber (schöner nachts: oben auf Nacht umschalten)
+   else if(b.dataset.act.startsWith('specht-')){const a=b.dataset.act.slice(7),sn=seasonOf(testShown?.day??day),o={};if(shownStage()<5)o.stage=5;if(a==='schmiede'&&sn!=='winter')o.day=SEASON_MID.winter;if(a==='futter'&&sn==='winter')o.day=SEASON_MID.sommer;set(o);   // ab Stufe 5; Höhle: Fortschritt nur Anzeige (bis „Mein Baum“)
+    const bau={bau1:0.04,bau3:0.4,bau5:0.75}[a];
+    setTimeout(()=>{if(bau!=null)baum.woodpecker?.({art:'bau',bau});else if(a==='abend'){baum.woodpecker?.({art:'abend',bau:1});baum.setNight?.(true);}else if(a==='morgen'){baum.woodpecker?.({art:'morgen',bau:1});baum.setNight?.(false);}else baum.woodpecker?.({art:a,bau:1});},500);}   // abends/morgens: der Baum wird Nacht bzw. Tag (bis „Mein Baum“)
    else if(b.dataset.act==='visit'){if(shownStage()<1)set({stage:1});else set({});setTimeout(()=>baum.visit(),50);}
-   else if(b.dataset.act==='mine'){testOn=false;testShown=null;baum.setDay(day);baum.setStage(state.stage);paintProgress();paint();run();restoreAvatar();}
+   else if(b.dataset.act==='falter'){if(shownStage()<1)set({stage:1});else set({});setTimeout(()=>baum.butterfly?.({force:true}),50);}   // auch nachts, nicht im Winter
+   else if(b.dataset.act==='kaefer'){if(shownStage()<2)set({stage:2});else set({});setTimeout(()=>baum.ladybird?.(),400);}   // tagsüber, nicht im Winter
+   else if(b.dataset.act==='meise'){if(shownStage()<3)set({stage:3});else set({});setTimeout(()=>baum.titVisit?.(),400);}   // tagsüber; Stufe 3 auf Äste, ab 4 Frühling/Sommer ins Loch, sonst Dach/Ast
+   else if(b.dataset.act.startsWith('meise-')){const a=b.dataset.act.slice(6),o={day:{nest:7,futter:20,aus:32,familie:45,winter:SEASON_MID.winter}[a]};if(shownStage()<4)o.stage=4;set(o);setTimeout(()=>baum.titVisit?.({art:{aus:'ausflug',winter:'ruhe'}[a]||a}),600);}   // ab Stufe 4 (Nistkasten); Tag im Vanamo-Jahr dazu: Nestbau 8, Füttern 21, Ausfliegen 33, Sommer 46
+   else if(b.dataset.act==='kraehen'){const sn=seasonOf(testShown?.day??day),o={};if(shownStage()<4)o.stage=4;if(sn!=='herbst'&&sn!=='winter')o.day=SEASON_MID.winter;set(o);setTimeout(()=>baum.crows?.(),400);}   // ab Stufe 4, Herbst/Winter, tagsüber
+   else if(b.dataset.act==='hummeln'){const sn=seasonOf(testShown?.day??day),o={};if(shownStage()<2)o.stage=2;if(sn!=='fruehling'&&sn!=='sommer')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.bumblebee?.(),400);}   // ab Stufe 2, Frühling/Sommer, tagsüber
+   else if(b.dataset.act.startsWith('pfau')){const sn=seasonOf(testShown?.day??day),o={},mode=b.dataset.act==='pfau-stamm'?'stamm':b.dataset.act==='pfau-paar'?'paar':undefined;if(shownStage()<3)o.stage=3;if(mode==='stamm'&&shownStage()===4)o.stage=5;if(sn!=='fruehling'&&sn!=='sommer')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.peacock?.({mode}),400);}   // ab Stufe 3, Frühling/Sommer, tagsüber; am Stamm nicht auf Stufe 4 (dort sitzt der Nistkasten am kurzen Stamm)
+   else if(b.dataset.act==='blau'){const o={};if(shownStage()<2)o.stage=2;if(seasonOf(testShown?.day??day)!=='sommer')o.day=SEASON_MID.sommer;set(o);setTimeout(()=>baum.blues?.(),400);}   // ab Stufe 2, Sommer, tagsüber
+   else if(b.dataset.act==='mine'){testOn=false;testShown=null;baum.setDay(day,jahr);baum.setStage(state.stage);baum.setNight?.(html.dataset.themeMode==='dark');paintProgress();paint();run();restoreAvatar();}
   });
   range.addEventListener('input',()=>set({day:+range.value}));
   paint();
@@ -451,6 +547,17 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   if(!visitOkSince)visitOkSince=Date.now();
   if(Date.now()<visitAt||Date.now()-visitOkSince<VISIT_OK)return;
   if(baum.visit())visitAt=-1;
+ },1000);
+ // ---- Zitronenfalter (siehe oben)
+ let falterAt=0,falterOkSince=0;
+ const planFalter=first=>{falterAt=Date.now()+(first?(Math.random()<2/3?6000+Math.random()*12000:40000+Math.random()*50000):60000+Math.random()*120000);};
+ setInterval(()=>{
+  if(!baum?.butterfly||!falterAt||start!=='done'||state.stage<1)return;
+  const ok=baum.running&&!document.hidden&&onWelcome()&&glassP<.2&&!testOn&&!reduce.matches&&html.dataset.themeMode!=='dark'&&!baum.busy&&!birdBusy&&!birdQueued;
+  if(!ok){falterOkSince=0;return;}
+  if(!falterOkSince)falterOkSince=Date.now();
+  if(Date.now()<falterAt||Date.now()-falterOkSince<2000)return;
+  baum.butterfly();planFalter(false);   // ging es gerade nicht (Winter, Nacht), dann beim nächsten Mal
  },1000);
  // ---- Baumvögel (siehe oben)
  const BIRDS_KEY='vanamo-baum-voegel';   // in diesem Browser schon gezeigt (falls das Speichern im Konto nicht klappte)
@@ -536,8 +643,8 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
  // ---- Baum laden
  async function load(){
   await waitIntro;
-  const {createBaum}=await import('./baum/baum.mjs?v=17');
-  baum=createBaum(stageEl,{page:true,paused:true,stage:start==='done'?state.stage:0,seed:start==='done',day,
+  const {createBaum}=await import('./baum/baum.mjs?v=44');
+  baum=createBaum(stageEl,{page:true,paused:true,stage:start==='done'?state.stage:0,seed:start==='done',day,jahr,
    frameY:.34,zoom:.86,maxDpr:coarse?1.5:2,reduceMotion:reduce.matches});
   await baum.ready;
   // zwei Bilder abwarten, dann einblenden
@@ -551,6 +658,7 @@ export function mountHomeTree({getReviews,waitIntro=Promise.resolve()}){
   takeFoto();
   mountTest();
   planVisit();
+  planFalter(true);
   initBirds();
   // Farbschema gewechselt: neues Foto (der Hintergrund ist im Foto mit drin; Tag/Nacht blendet ~1,2 s über)
   new MutationObserver(()=>takeFoto(2000)).observe(html,{attributes:true,attributeFilter:['data-theme']});

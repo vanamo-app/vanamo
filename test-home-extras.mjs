@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {finnishGreeting,displayName,weekActivity,practiceStreak,dayKey,chooseDaily,DAILY_RECENT} from './dist/home-extras.mjs';
+import {finnishGreeting,displayName,weekActivity,learningDays,dayKey,chooseDaily,DAILY_RECENT} from './dist/home-extras.mjs';
 import {initialHomeTab,HOME_TABS} from './dist/home-tabs.mjs';
 
 const at=(y,m,d,h)=>new Date(y,m-1,d,h,15);
@@ -16,10 +16,13 @@ assert.equal(displayName('stefan'),'Stefan');assert.equal(displayName(''),'');as
 
 const tue=at(2026,9,29,9),k=(y,m,d)=>dayKey(new Date(y,m-1,d,12));
 const daily={[k(2026,9,29)]:4,[k(2026,9,28)]:10,[k(2026,9,27)]:1,[k(2026,9,25)]:3};
-assert.equal(practiceStreak(daily,tue),3,'heute, gestern, vorgestern');
-assert.equal(practiceStreak({[k(2026,9,28)]:5,[k(2026,9,27)]:5},tue),2,'noch nicht geübt heute bricht die Serie nicht');
-assert.equal(practiceStreak({[k(2026,9,27)]:5},tue),0,'Lücke gestern beendet die Serie');
-assert.equal(practiceStreak({},tue),0);
+// Lerntage: alle Tage mit Übung – Lücken und lange Pausen setzen nichts zurück.
+assert.equal(learningDays(daily),4,'heute, gestern, vorgestern und der 25. (vor der Lücke am 26.)');
+assert.equal(learningDays({[k(2026,9,28)]:5,[k(2026,9,27)]:5}),2,'heute noch nicht geübt: nichts geht verloren');
+assert.equal(learningDays({[k(2026,9,27)]:5}),1,'eine Lücke setzt nicht zurück');
+assert.equal(learningDays({[k(2026,1,2)]:1,[k(2026,3,30)]:2,[k(2026,9,27)]:5}),3,'auch nach Pausen von Monaten wird weitergezählt');
+assert.equal(learningDays({[k(2026,9,27)]:0,kaputt:3}),0,'Tage ohne Übung und kaputte Einträge zählen nicht');
+assert.equal(learningDays({}),0);assert.equal(learningDays(undefined),0);
 
 const week=weekActivity(daily,tue);
 assert.deepEqual(week.map(d=>d.short),['Mo','Di','Mi','Do','Fr','Sa','So']);
@@ -53,4 +56,4 @@ assert.equal(initialHomeTab({intro:true,sessionTab:'practice',lastDay:'2026-10-0
  // Ohne Verlauf (anderes Gerät) kommen an aufeinanderfolgenden Tagen trotzdem verschiedene Sätze.
  for(let i=1;i<days.length;i++)assert.notEqual(chooseDaily(pool,user,days[i]).id,chooseDaily(pool,user,days[i-1]).id);
 }
-console.log('Startseite: Begrüßung nach Tageszeit, Name, Serie, Wochenreihe und Start-Reiter geprüft.');
+console.log('Startseite: Begrüßung nach Tageszeit, Name, Lerntage, Wochenreihe und Start-Reiter geprüft.');
